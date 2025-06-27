@@ -4,7 +4,7 @@ A modern tower defense game built entirely by Claude Code - demonstrating AI-pow
 
 ![Game Screenshot](screenshot.png)
 
-**[Play the Game →](https://your-game-url.com)**
+**[Play the Game →](https://claude-game-lilac.vercel.app/)**
 
 ## About
 
@@ -62,6 +62,7 @@ http://localhost:3000/?debug=true
 ```
 
 Debug mode enables:
+
 - **DEBUG: -100 HP** - Deal 100 damage to your tower
 - **DEBUG: +1000 Gold** - Add 1000 gold instantly
 - **DEBUG: +100 Essence** - Add 100 essence instantly
