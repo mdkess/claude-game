@@ -50,139 +50,119 @@ export function GameUI({
   };
   return (
     <>
-      {/* HUD */}
-      <div className="absolute top-0 left-0 right-0 p-2 sm:p-4 pointer-events-none">
-        <div className="flex justify-center">
-          {/* Consolidated HUD Panel */}
-          <div className="bg-gray-900/80 backdrop-blur-sm px-3 sm:px-6 py-2 sm:py-3 rounded-lg border border-gray-700/50 scale-75 sm:scale-100 origin-top">
-            <div className="flex items-center gap-6">
-              {/* Health Bar */}
-              <div className="w-40">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-white text-sm font-bold">Health</span>
-                  <span className="text-green-400 text-xs min-w-[3rem] text-right">
-                    {gameState.healthRegen && gameState.healthRegen > 0 ? `+${gameState.healthRegen.toFixed(1)}/s` : ''}
-                  </span>
-                </div>
-                <div className="w-full h-3 bg-gray-700 rounded-full">
-                  <div
-                    className="h-full bg-green-500 rounded-full transition-all"
-                    style={{
-                      width: `${(gameState.health / gameState.maxHealth) * 100}%`,
-                    }}
-                  />
-                </div>
-                <div className="text-white text-xs mt-0.5 text-center">
-                  {Math.ceil(gameState.health)} / {gameState.maxHealth}
-                </div>
-              </div>
-
-              <div className="h-12 w-px bg-gray-600" />
-
-              {/* Resources */}
-              <div className="flex flex-col justify-center w-20">
-                <div className="text-yellow-400 font-bold tabular-nums">
-                  💰 {gameState.gold.toString().padStart(4, ' ')}
-                </div>
-                <div className="text-purple-400 text-sm tabular-nums">
-                  ✨ {totalEssence.toString().padStart(4, ' ')}
-                </div>
-                {(gameState.goldPerRound && gameState.goldPerRound > 0) || 
-                 (gameState.interestRate && gameState.interestRate > 0) ? (
-                  <div className="text-xs">
-                    {gameState.goldPerRound && gameState.goldPerRound > 0 && (
-                      <div className="text-yellow-300 tabular-nums">
-                        +{gameState.goldPerRound}/wave
-                      </div>
-                    )}
-                    {gameState.interestRate && gameState.interestRate > 0 && (
-                      <div className="text-green-300 tabular-nums">
-                        +{(gameState.interestRate * 100).toFixed(0)}%/s
-                      </div>
-                    )}
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="h-12 w-px bg-gray-600" />
-
-              {/* Wave Info */}
-              <div className="flex flex-col justify-center w-16 text-center">
-                <div className="text-white font-bold">
-                  Wave {gameState.wave}
-                </div>
-                <div className="text-gray-400 text-xs tabular-nums">
-                  {formatTime(gameState.survivalTime)}
-                </div>
-              </div>
-
-              {gameState.waveState && (
-                <>
-                  <div className="h-12 w-px bg-gray-600" />
-                  
-                  {/* Wave Enemies (Compact) */}
-                  <div className="flex items-center gap-2">
-                    <div className="w-16 text-center">
-                      {!gameState.waveState.isWaveActive ? (
-                        <div className="text-yellow-400 text-sm animate-pulse tabular-nums">
-                          {Math.ceil(gameState.waveState.nextWaveTimer)}s
-                        </div>
-                      ) : gameState.waveState.totalEnemiesRemaining === 0 ? (
-                        <span className="text-green-400 text-xs animate-pulse">
-                          Done!
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-xs">Active</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {gameState.waveState.composition.enemies.map((enemy, idx) => {
-                        const enemyInfo = ENEMY_ICONS[enemy.type as keyof typeof ENEMY_ICONS];
-                        const remaining = gameState.waveState?.enemiesRemaining[enemy.type] || 0;
-                        const killed = enemy.count - remaining;
-                        
-                        return (
-                          <div key={idx} className="flex items-center gap-0.5 min-w-[3rem]">
-                            <span style={{ color: enemyInfo?.color || '#fff' }}>
-                              {enemy.icon}
-                            </span>
-                            <span className={`text-xs tabular-nums ${
-                              remaining > 0 ? "text-white" : "text-gray-600 line-through"
-                            }`}>
-                              {killed.toString().padStart(2, ' ')}/{enemy.count}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </>
+      {/* HUD - Redesigned for mobile */}
+      <div className="absolute top-0 left-0 right-0 p-2 pointer-events-none">
+        {/* Top bar - core stats */}
+        <div className="flex justify-between items-start gap-2 mb-2">
+          {/* Left: Health */}
+          <div className="bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700/50 flex-1 max-w-[200px]">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-white text-xs font-bold">Health</span>
+              {gameState.healthRegen && gameState.healthRegen > 0 && (
+                <span className="text-green-400 text-xs">+{gameState.healthRegen.toFixed(1)}/s</span>
               )}
+            </div>
+            <div className="w-full h-2 bg-gray-700 rounded-full">
+              <div
+                className="h-full bg-green-500 rounded-full transition-all"
+                style={{ width: `${(gameState.health / gameState.maxHealth) * 100}%` }}
+              />
+            </div>
+            <div className="text-white text-xs mt-0.5 text-center">
+              {Math.ceil(gameState.health)} / {gameState.maxHealth}
+            </div>
+          </div>
 
-              <div className="h-12 w-px bg-gray-600" />
-
-              {/* Stats & Speed */}
-              <div className="flex items-center gap-3">
-                <div className="text-gray-400 text-xs w-20 tabular-nums">
-                  Score: {gameState.score}
+          {/* Center: Wave & Time */}
+          <div className="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-700/50">
+            <div className="text-center">
+              <div className="text-white font-bold text-sm">Wave {gameState.wave}</div>
+              <div className="text-gray-400 text-xs">{formatTime(gameState.survivalTime)}</div>
+              {gameState.waveState && !gameState.waveState.isWaveActive && (
+                <div className="text-yellow-400 text-xs animate-pulse mt-1">
+                  Next: {Math.ceil(gameState.waveState.nextWaveTimer)}s
                 </div>
-                {onToggleSpeed && (
-                  <button
-                    onClick={onToggleSpeed}
-                    className={`w-8 h-8 rounded text-sm font-bold transition-colors pointer-events-auto flex items-center justify-center ${
-                      gameState.speedMultiplier === 2 
-                        ? 'bg-green-600 hover:bg-green-700 text-white' 
-                        : 'bg-gray-600 hover:bg-gray-700 text-white'
-                    }`}
-                    title="Press SPACE to toggle speed"
-                  >
-                    {gameState.speedMultiplier === 2 ? '2x' : '1x'}
-                  </button>
-                )}
+              )}
+            </div>
+          </div>
+
+          {/* Right: Resources */}
+          <div className="bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700/50">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="text-yellow-400 text-sm">💰</span>
+                <span className="text-white font-bold text-sm tabular-nums">{gameState.gold}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-purple-400 text-sm">✨</span>
+                <span className="text-white font-bold text-sm tabular-nums">{totalEssence}</span>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Wave enemies - separate row, only shown during waves */}
+        {gameState.waveState && gameState.waveState.isWaveActive && gameState.waveState.composition.enemies.length > 0 && (
+          <div className="flex justify-center">
+            <div className="bg-gray-900/80 backdrop-blur-sm px-3 py-1 rounded-lg border border-gray-700/50">
+              <div className="flex items-center gap-2 text-xs">
+                {gameState.waveState.composition.enemies.map((enemy, idx) => {
+                  const enemyInfo = ENEMY_ICONS[enemy.type as keyof typeof ENEMY_ICONS];
+                  const remaining = gameState.waveState?.enemiesRemaining[enemy.type] || 0;
+                  const killed = enemy.count - remaining;
+                  
+                  return (
+                    <div key={idx} className="flex items-center gap-1">
+                      <span style={{ color: enemyInfo?.color || '#fff' }}>
+                        {enemy.icon}
+                      </span>
+                      <span className={`tabular-nums ${
+                        remaining > 0 ? "text-white" : "text-gray-500 line-through"
+                      }`}>
+                        {killed}/{enemy.count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Score and Speed - Bottom right of HUD */}
+        <div className="absolute top-2 right-2 flex items-center gap-2">
+          <div className="bg-gray-900/80 backdrop-blur-sm px-2 py-1 rounded border border-gray-700/50">
+            <span className="text-gray-400 text-xs">Score: {gameState.score}</span>
+          </div>
+          {onToggleSpeed && (
+            <button
+              onClick={onToggleSpeed}
+              className={`w-8 h-8 rounded text-sm font-bold transition-colors pointer-events-auto flex items-center justify-center ${
+                gameState.speedMultiplier === 2 
+                  ? 'bg-green-600 hover:bg-green-700 text-white' 
+                  : 'bg-gray-600 hover:bg-gray-700 text-white'
+              }`}
+              title="Press SPACE to toggle speed"
+            >
+              {gameState.speedMultiplier === 2 ? '2x' : '1x'}
+            </button>
+          )}
+        </div>
+
+        {/* Economic bonuses - shown below resources when active */}
+        {((gameState.goldPerRound && gameState.goldPerRound > 0) || 
+          (gameState.interestRate && gameState.interestRate > 0)) && (
+          <div className="absolute top-14 right-2">
+            <div className="bg-gray-900/80 backdrop-blur-sm px-2 py-1 rounded border border-gray-700/50 text-xs">
+              {gameState.goldPerRound && gameState.goldPerRound > 0 && (
+                <div className="text-yellow-300">+{gameState.goldPerRound}/wave</div>
+              )}
+              {gameState.interestRate && gameState.interestRate > 0 && (
+                <div className="text-green-300">+{(gameState.interestRate * 100).toFixed(0)}%/s</div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Debug Buttons */}
