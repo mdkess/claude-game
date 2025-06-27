@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { PermanentUpgrades } from '../game/types';
 import { permanentUpgradeSystem, PermanentUpgradeType } from '../game/systems/PermanentUpgradeSystem';
 import { EssenceUpgradeCard } from './ui/EssenceUpgradeCard';
-import { TabNavigation } from './ui/TabNavigation';
 import { EssenceMenuHeader } from './ui/EssenceMenuHeader';
 
 interface EssenceMenuProps {
@@ -15,11 +13,6 @@ interface EssenceMenuProps {
   onPurchaseUpgrade: (type: keyof PermanentUpgrades) => void;
 }
 
-const tabs = [
-  { id: 'offensive', label: 'Offensive', icon: '⚔️', color: 'red' },
-  { id: 'defensive', label: 'Defensive', icon: '🛡️', color: 'blue' },
-  { id: 'economic', label: 'Economic', icon: '💰', color: 'yellow' }
-];
 
 export function EssenceMenu({ 
   isOpen, 
@@ -28,8 +21,6 @@ export function EssenceMenu({
   permanentUpgrades, 
   onPurchaseUpgrade 
 }: EssenceMenuProps) {
-  const [activeTab, setActiveTab] = useState('offensive');
-  
   if (!isOpen) return null;
 
   const getUpgradeCost = (type: PermanentUpgradeType): number => {
@@ -57,26 +48,65 @@ export function EssenceMenu({
           onClose={onClose}
         />
 
-        <TabNavigation
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
+        <div className="overflow-y-auto p-4 space-y-4 scrollbar-custom">
+          {/* Offensive Upgrades */}
+          <div>
+            <h3 className="text-red-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 -mt-2 z-10">
+              ⚔️ Offensive Upgrades
+            </h3>
+            <div className="space-y-2 mt-2">
+              {permanentUpgradeSystem.getUpgradesByCategory('offensive').map(type => (
+                <EssenceUpgradeCard
+                  key={type}
+                  info={permanentUpgradeSystem.getUpgradeInfo(type)}
+                  currentLevel={getCurrentLevel(type)}
+                  cost={getUpgradeCost(type)}
+                  canAfford={canAfford(type)}
+                  isMaxLevel={isMaxLevel(type)}
+                  onPurchase={() => onPurchaseUpgrade(type)}
+                />
+              ))}
+            </div>
+          </div>
 
-        {/* Tab Content */}
-        <div className="overflow-y-auto p-6">
-          <div className="space-y-3">
-            {permanentUpgradeSystem.getUpgradesByCategory(activeTab).map(type => (
-              <EssenceUpgradeCard
-                key={type}
-                info={permanentUpgradeSystem.getUpgradeInfo(type)}
-                currentLevel={getCurrentLevel(type)}
-                cost={getUpgradeCost(type)}
-                canAfford={canAfford(type)}
-                isMaxLevel={isMaxLevel(type)}
-                onPurchase={() => onPurchaseUpgrade(type)}
-              />
-            ))}
+          {/* Defensive Upgrades */}
+          <div>
+            <h3 className="text-blue-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 z-10">
+              🛡️ Defensive Upgrades
+            </h3>
+            <div className="space-y-2 mt-2">
+              {permanentUpgradeSystem.getUpgradesByCategory('defensive').map(type => (
+                <EssenceUpgradeCard
+                  key={type}
+                  info={permanentUpgradeSystem.getUpgradeInfo(type)}
+                  currentLevel={getCurrentLevel(type)}
+                  cost={getUpgradeCost(type)}
+                  canAfford={canAfford(type)}
+                  isMaxLevel={isMaxLevel(type)}
+                  onPurchase={() => onPurchaseUpgrade(type)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Economic Upgrades */}
+          <div>
+            <h3 className="text-yellow-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 z-10">
+              💰 Economic Upgrades
+            </h3>
+            <div className="space-y-2 mt-2">
+              {permanentUpgradeSystem.getUpgradesByCategory('economic').map(type => (
+                <EssenceUpgradeCard
+                  key={type}
+                  info={permanentUpgradeSystem.getUpgradeInfo(type)}
+                  currentLevel={getCurrentLevel(type)}
+                  cost={getUpgradeCost(type)}
+                  canAfford={canAfford(type)}
+                  isMaxLevel={isMaxLevel(type)}
+                  onPurchase={() => onPurchaseUpgrade(type)}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="mt-6 pt-4 border-t border-gray-700">

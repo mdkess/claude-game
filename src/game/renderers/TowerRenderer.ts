@@ -11,9 +11,11 @@ export class TowerRenderer {
   private sprite: PIXI.Container;
   private towerGraphics: PIXI.Graphics;
   private rangeGraphics: PIXI.Graphics;
+  private rangeRippleContainer: PIXI.Container;
   private pulseTime: number = 0;
   private damageFlashTime: number = 0;
   private lastHealth: number = 0;
+  private rangeAnimationTime: number = 0;
   
   constructor(container: PIXI.Container) {
     this.container = container;
@@ -22,10 +24,12 @@ export class TowerRenderer {
     this.sprite = new PIXI.Container();
     
     // Create graphics
+    this.rangeRippleContainer = new PIXI.Container();
     this.rangeGraphics = new PIXI.Graphics();
     this.towerGraphics = new PIXI.Graphics();
     
     // Add range indicator first so it renders behind the tower
+    this.sprite.addChild(this.rangeRippleContainer);
     this.sprite.addChild(this.rangeGraphics);
     this.sprite.addChild(this.towerGraphics);
     
@@ -52,10 +56,14 @@ export class TowerRenderer {
       this.damageFlashTime -= deltaTime;
     }
     
-    // Update pulse animation
+    // Update pulse animation (affected by game speed)
     this.pulseTime += deltaTime * 2;
     const pulseScale = 1 + Math.sin(this.pulseTime) * 0.05;
     this.towerGraphics.scale.set(pulseScale);
+    
+    // Update range animation (affected by game speed)
+    this.rangeAnimationTime += deltaTime;
+    this.updateRangeAnimation(tower, deltaTime);
     
     // Redraw if stats changed (range indicator needs update)
     this.draw(tower);
@@ -70,12 +78,42 @@ export class TowerRenderer {
   }
   
   private draw(tower: Tower): void {
-    // Draw range indicator
+    // Draw range indicator with animated dashed line
     this.rangeGraphics.clear();
+    
+    // Create rotating dashed circle
+    const dashLength = 20;
+    const dashGap = 10;
+    const circumference = 2 * Math.PI * tower.stats.range;
+    const dashPlusGap = dashLength + dashGap;
+    const totalDashes = Math.floor(circumference / dashPlusGap);
+    const actualGapLength = dashGap / tower.stats.range; // Convert to radians
+    const rotationOffset = this.rangeAnimationTime * 0.5; // Rotate slowly
+    
     this.rangeGraphics.setStrokeStyle({ width: 2, color: COLORS.TOWER.MAIN, alpha: TOWER_ANIMATION.GLOW_ALPHA });
-    this.rangeGraphics.circle(0, 0, tower.stats.range);
-    this.rangeGraphics.fill({ color: COLORS.TOWER.MAIN, alpha: 0.05 });
+    
+    // Draw complete circle with dashes
+    const fullCircle = 2 * Math.PI;
+    const adjustedDashLength = fullCircle / totalDashes - actualGapLength;
+    
+    for (let i = 0; i < totalDashes; i++) {
+      const baseAngle = (i * fullCircle / totalDashes);
+      const startAngle = baseAngle + rotationOffset;
+      const endAngle = startAngle + adjustedDashLength;
+      
+      this.rangeGraphics.moveTo(
+        Math.cos(startAngle) * tower.stats.range,
+        Math.sin(startAngle) * tower.stats.range
+      );
+      
+      this.rangeGraphics.arc(0, 0, tower.stats.range, startAngle, endAngle);
+    }
+    
     this.rangeGraphics.stroke();
+    
+    // Add subtle fill
+    this.rangeGraphics.circle(0, 0, tower.stats.range);
+    this.rangeGraphics.fill({ color: COLORS.TOWER.MAIN, alpha: 0.02 });
     
     // Draw tower
     this.towerGraphics.clear();
@@ -99,6 +137,45 @@ export class TowerRenderer {
     // Draw center core
     this.towerGraphics.circle(0, 0, TOWER_RADIUS * 0.3);
     this.towerGraphics.fill({ color: COLORS.TOWER.CORE, alpha: 1 });
+  }
+
+  private updateRangeAnimation(tower: Tower, deltaTime: number): void {
+    // Create expanding ripples periodically
+    if (this.rangeAnimationTime % 3 < deltaTime) { // Every 3 seconds
+      const ripple = new PIXI.Graphics();
+      ripple.setStrokeStyle({ width: 2, color: COLORS.TOWER.MAIN, alpha: 0.5 });
+      ripple.circle(0, 0, tower.stats.range);
+      ripple.stroke();
+      
+      // Store animation data
+      interface AnimatedRipple extends PIXI.Graphics {
+        startTime: number;
+        range: number;
+      }
+      const animatedRipple = ripple as AnimatedRipple;
+      animatedRipple.startTime = this.rangeAnimationTime;
+      animatedRipple.range = tower.stats.range;
+      
+      this.rangeRippleContainer.addChild(ripple);
+    }
+    
+    // Update existing ripples
+    for (let i = this.rangeRippleContainer.children.length - 1; i >= 0; i--) {
+      const ripple = this.rangeRippleContainer.children[i] as PIXI.Graphics & { startTime: number; range: number };
+      const age = this.rangeAnimationTime - ripple.startTime;
+      
+      if (age > 2) {
+        // Remove old ripples
+        this.rangeRippleContainer.removeChild(ripple);
+        ripple.destroy();
+      } else {
+        // Animate ripple
+        const progress = age / 2;
+        const scale = 1 + progress * 0.2;
+        ripple.scale.set(scale);
+        ripple.alpha = 0.5 * (1 - progress);
+      }
+    }
   }
 
   private blendColors(color1: number, color2: number, factor: number): number {

@@ -58,8 +58,8 @@ export const ENEMY_HEALTH_BAR = {
 // Game Mechanics
 export const WAVE_DURATION_SECONDS = 30;
 export const DIFFICULTY_SCALING_FACTOR = 1.1;
-export const ESSENCE_CONVERSION_RATE = 0.1; // 10% of score becomes essence
-export const STARTING_GOLD = 15;
+export const ESSENCE_CONVERSION_RATE = 0.15; // 15% of score becomes essence
+export const STARTING_GOLD = 25;
 
 // Upgrade Constants
 export const UPGRADE_VALUES = {

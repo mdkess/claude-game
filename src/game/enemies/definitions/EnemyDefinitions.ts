@@ -26,13 +26,13 @@ export const enemyDefinitions: Map<EnemyType, EnemyDefinition> = new Map([
     type: EnemyType.Basic,
     displayName: 'Basic Enemy',
     baseStats: {
-      health: 20,
+      health: 15,
       speed: 80,
       damage: 10,
       reward: 5
     },
     visual: {
-      color: 0xff4444,
+      color: 0x00ff88,
       size: 15,
       shape: 'circle'
     },
@@ -50,9 +50,9 @@ export const enemyDefinitions: Map<EnemyType, EnemyDefinition> = new Map([
       reward: 2
     },
     visual: {
-      color: 0xff8844,
+      color: 0xffaa00,
       size: 8,
-      shape: 'circle'
+      shape: 'triangle'
     },
     movement: () => new StraightMovement(160),
     death: () => new NormalDeath(),
@@ -63,13 +63,13 @@ export const enemyDefinitions: Map<EnemyType, EnemyDefinition> = new Map([
     type: EnemyType.Tank,
     displayName: 'Tank Enemy',
     baseStats: {
-      health: 100,
+      health: 80,
       speed: 40,
-      damage: 25,
+      damage: 20,
       reward: 20
     },
     visual: {
-      color: 0x666666,
+      color: 0xff4444,
       size: 20,
       shape: 'hexagon'
     },
@@ -81,15 +81,15 @@ export const enemyDefinitions: Map<EnemyType, EnemyDefinition> = new Map([
     type: EnemyType.Splitter,
     displayName: 'Splitter Enemy',
     baseStats: {
-      health: 30,
+      health: 25,
       speed: 80,
       damage: 10,
       reward: 10
     },
     visual: {
-      color: 0x9944ff,
+      color: 0xaa44ff,
       size: 12,
-      shape: 'circle'
+      shape: 'square'
     },
     movement: () => new StraightMovement(80),
     death: () => new SplitterDeath(3, 'swarm')
@@ -98,8 +98,10 @@ export const enemyDefinitions: Map<EnemyType, EnemyDefinition> = new Map([
 
 // Helper function to get scaled stats for a given wave
 export function getScaledStats(definition: EnemyDefinition, waveNumber: number) {
-  const scaleFactor = Math.pow(1.05, waveNumber - 1);
-  const speedScale = Math.pow(1.02, waveNumber - 1);
+  // More gradual health scaling - 3% per wave instead of 5%
+  const scaleFactor = Math.pow(1.03, waveNumber - 1);
+  // Even slower speed scaling - 1% per wave instead of 2%
+  const speedScale = Math.pow(1.01, waveNumber - 1);
   
   return {
     health: definition.baseStats.health * scaleFactor,

@@ -17,7 +17,8 @@ export interface ProjectileConfig {
   speed: number;
   range: number;
   damage: number;
-  bounceChance?: number;
+  bounceChance?: number;  // Legacy
+  bounceCount?: number;   // Number of times to chain
 }
 
 /**
@@ -35,7 +36,8 @@ export class Projectile {
   private speed: number = 0;
   private maxDistance: number = 0;
   private distanceTraveled: number = 0;
-  private bounceChance: number = 0;
+  private bounceChance: number = 0;  // Legacy
+  private bounceCount: number = 0;    // Number of remaining bounces
   private hitTargets: Set<ProjectileTarget> = new Set();
   
   init(config: ProjectileConfig): void {
@@ -44,7 +46,8 @@ export class Projectile {
     this.speed = config.speed;
     this.maxDistance = config.range;
     this.damage = config.damage;
-    this.bounceChance = config.bounceChance || 0;
+    this.bounceChance = config.bounceChance || 0;  // Legacy
+    this.bounceCount = config.bounceCount || 0;
     this.id = Date.now() + Math.random(); // Generate new ID on init
     
     // Calculate initial velocity
@@ -71,6 +74,7 @@ export class Projectile {
     this.maxDistance = 0;
     this.distanceTraveled = 0;
     this.bounceChance = 0;
+    this.bounceCount = 0;
     this.isDestroyed = false;
     this.hitTargets.clear();
   }
@@ -114,9 +118,9 @@ export class Projectile {
     // Mark this target as hit to prevent multiple hits
     this.hitTargets.add(target);
     
-    // Check for bounce
-    if (this.bounceChance > 0 && Math.random() < this.bounceChance) {
-      // Find a nearby target to bounce to
+    // Check for bounce/chain
+    if (this.bounceCount > 0) {
+      // Find a nearby target to chain to
       const nearbyTargets = allTargets.filter(t => 
         t !== target && 
         !t.isDead && 
@@ -125,9 +129,9 @@ export class Projectile {
       );
       
       if (nearbyTargets.length > 0) {
-        // Find closest target within bounce range
+        // Find closest target within chain range
         let closestTarget: ProjectileTarget | null = null;
-        let closestDistance = 150; // Max bounce range
+        let closestDistance = 150; // Max chain range
         
         for (const nearby of nearbyTargets) {
           const dx = nearby.x - this.x;
@@ -141,24 +145,24 @@ export class Projectile {
         }
         
         if (closestTarget) {
-          // Create a new bounced projectile
-          const bounceProjectile = new Projectile();
-          bounceProjectile.init({
+          // Create a new chained projectile
+          const chainProjectile = new Projectile();
+          chainProjectile.init({
             x: this.x,
             y: this.y,
             targetX: closestTarget.x,
             targetY: closestTarget.y,
             speed: this.speed,
-            range: 150, // Bounce range
-            damage: this.damage,
-            bounceChance: 0 // No further bounces
+            range: 150, // Chain range
+            damage: Math.floor(this.damage * 0.8), // 80% damage on chain
+            bounceCount: this.bounceCount - 1 // One less bounce
           });
           
           // Copy hit targets to prevent hitting same targets
-          bounceProjectile.hitTargets = new Set(this.hitTargets);
+          chainProjectile.hitTargets = new Set(this.hitTargets);
           
-          // Emit event to spawn the bounced projectile
-          gameEvents.emit(GameEvents.ProjectileSpawned, bounceProjectile);
+          // Emit event to spawn the chained projectile
+          gameEvents.emit(GameEvents.ProjectileSpawned, chainProjectile);
         }
       }
     }

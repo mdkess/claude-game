@@ -139,8 +139,8 @@ export class GameCore {
       fireRate: upgradedStats.fireRate,
       range: baseStats.range,
       projectileSpeed: baseStats.projectileSpeed,
-      multiShotChance: upgradedStats.multiShotChance,
-      bounceChance: upgradedStats.bounceChance
+      multiShotCount: upgradedStats.multiShotCount,
+      bounceCount: upgradedStats.bounceCount
     };
   }
   

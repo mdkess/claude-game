@@ -49,8 +49,10 @@ export interface TowerStats {
   fireRate: number;
   range: number;
   projectileSpeed: number;
-  multiShotChance?: number;
-  bounceChance?: number;
+  multiShotChance?: number;  // Legacy - to be removed
+  bounceChance?: number;      // Legacy - to be removed
+  multiShotCount?: number;    // Number of extra projectiles
+  bounceCount?: number;       // Number of chain bounces
 }
 
 export interface EnemyStats {

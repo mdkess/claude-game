@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { GameState } from '../../game/types';
 
 interface UpgradePanelProps {
@@ -60,48 +60,31 @@ function UpgradeButton({
 }
 
 export function UpgradePanel({ gameState, upgradeCosts, onUpgrade }: UpgradePanelProps) {
-  const [activeTab, setActiveTab] = useState<'offensive' | 'defensive' | 'economic'>('offensive');
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollRef.current) {
+        const hasScroll = scrollRef.current.scrollHeight > scrollRef.current.clientHeight;
+        setShowScrollHint(hasScroll);
+      }
+    };
+    
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, []);
 
   return (
-    <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
-      {/* Tab Headers */}
-      <div className="flex border-b border-gray-700">
-        <button
-          onClick={() => setActiveTab('offensive')}
-          className={`px-4 py-2 text-sm font-bold transition-all border-b-2 ${
-            activeTab === 'offensive'
-              ? 'text-red-400 border-red-500 bg-red-900/20'
-              : 'text-gray-400 border-transparent hover:text-red-300'
-          }`}
-        >
-          ⚔️ Offensive
-        </button>
-        <button
-          onClick={() => setActiveTab('defensive')}
-          className={`px-4 py-2 text-sm font-bold transition-all border-b-2 ${
-            activeTab === 'defensive'
-              ? 'text-blue-400 border-blue-500 bg-blue-900/20'
-              : 'text-gray-400 border-transparent hover:text-blue-300'
-          }`}
-        >
-          🛡️ Defensive
-        </button>
-        <button
-          onClick={() => setActiveTab('economic')}
-          className={`px-4 py-2 text-sm font-bold transition-all border-b-2 ${
-            activeTab === 'economic'
-              ? 'text-yellow-400 border-yellow-500 bg-yellow-900/20'
-              : 'text-gray-400 border-transparent hover:text-yellow-300'
-          }`}
-        >
-          💰 Economic
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      <div className="p-3">
-        {activeTab === 'offensive' && (
-          <div className="flex gap-2">
+    <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg relative">
+      <div ref={scrollRef} className="p-3 max-h-[240px] overflow-y-auto space-y-3 scrollbar-custom relative">
+        {/* Offensive Upgrades */}
+        <div className="space-y-2">
+          <h3 className="text-red-400 font-bold text-sm flex items-center gap-1 sticky top-0 bg-gray-900/90 py-1 -mt-1">
+            ⚔️ Offensive
+          </h3>
+          <div className="flex flex-wrap gap-2 pl-2">
             <UpgradeButton
               label="Damage"
               hotkey="1"
@@ -130,9 +113,14 @@ export function UpgradePanel({ gameState, upgradeCosts, onUpgrade }: UpgradePane
               color="red"
             />
           </div>
-        )}
-        {activeTab === 'defensive' && (
-          <div className="flex gap-2">
+        </div>
+
+        {/* Defensive Upgrades */}
+        <div className="space-y-2">
+          <h3 className="text-blue-400 font-bold text-sm flex items-center gap-1 sticky top-0 bg-gray-900/90 py-1">
+            🛡️ Defensive
+          </h3>
+          <div className="flex flex-wrap gap-2 pl-2">
             <UpgradeButton
               label="Max Health"
               hotkey="4"
@@ -152,9 +140,14 @@ export function UpgradePanel({ gameState, upgradeCosts, onUpgrade }: UpgradePane
               color="blue"
             />
           </div>
-        )}
-        {activeTab === 'economic' && (
-          <div className="flex gap-2">
+        </div>
+
+        {/* Economic Upgrades */}
+        <div className="space-y-2">
+          <h3 className="text-yellow-400 font-bold text-sm flex items-center gap-1 sticky top-0 bg-gray-900/90 py-1">
+            💰 Economic
+          </h3>
+          <div className="flex flex-wrap gap-2 pl-2">
             <UpgradeButton
               label="Gold/Round"
               hotkey="6"
@@ -174,8 +167,18 @@ export function UpgradePanel({ gameState, upgradeCosts, onUpgrade }: UpgradePane
               color="yellow"
             />
           </div>
-        )}
+        </div>
       </div>
+      {/* Scroll indicators */}
+      {showScrollHint && (
+        <>
+          <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-gray-900/90 to-transparent pointer-events-none rounded-t-lg" />
+          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-gray-900/90 to-transparent pointer-events-none rounded-b-lg" />
+          <div className="absolute bottom-2 right-2 text-xs text-gray-400 opacity-50 pointer-events-none animate-pulse">
+            ↓ scroll
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -16,26 +16,26 @@ export class PermanentUpgradeSystem {
     startingDamage: {
       name: 'Starting Damage',
       description: 'Increase tower starting damage',
-      effect: '+2 damage per level',
+      effect: '+5 damage per level',
       maxLevel: 10,
       baseCost: 10,
-      costScaling: 1.5
+      costScaling: 1.8
     },
     startingFireRate: {
       name: 'Starting Fire Rate',
       description: 'Increase tower starting fire rate',
-      effect: '+0.2 shots/s per level',
+      effect: '+0.5 shots/s per level',
       maxLevel: 10,
       baseCost: 10,
-      costScaling: 1.5
+      costScaling: 1.8
     },
     startingHealth: {
       name: 'Starting Health',
       description: 'Increase starting health',
-      effect: '+10 HP per level',
+      effect: '+25 HP per level',
       maxLevel: 10,
       baseCost: 8,
-      costScaling: 1.5
+      costScaling: 1.8
     },
     goldMultiplier: {
       name: 'Gold Multiplier',
@@ -55,19 +55,19 @@ export class PermanentUpgradeSystem {
     },
     multiShot: {
       name: 'Multi-shot',
-      description: 'Chance to fire multiple projectiles',
-      effect: '+5% chance per level',
-      maxLevel: 10,
-      baseCost: 15,
-      costScaling: 1.7
+      description: 'Fire additional projectiles with each shot',
+      effect: '+1 projectile per level',
+      maxLevel: 5,
+      baseCost: 20,
+      costScaling: 2.2
     },
     bounce: {
-      name: 'Bounce',
-      description: 'Chance for projectiles to bounce to nearby enemies',
-      effect: '+5% chance per level',
-      maxLevel: 10,
-      baseCost: 15,
-      costScaling: 1.7
+      name: 'Chain Lightning',
+      description: 'Projectiles chain to additional enemies',
+      effect: '+1 chain per level',
+      maxLevel: 5,
+      baseCost: 25,
+      costScaling: 2.2
     }
   };
 
@@ -148,11 +148,11 @@ export class PermanentUpgradeSystem {
    */
   applyPermanentUpgrades(baseDamage: number, baseFireRate: number, baseHealth: number, permanentUpgrades: PermanentUpgrades) {
     return {
-      damage: baseDamage + (permanentUpgrades.startingDamage * 2),
-      fireRate: baseFireRate + (permanentUpgrades.startingFireRate * 0.2),
-      health: baseHealth + (permanentUpgrades.startingHealth * 10),
-      multiShotChance: permanentUpgrades.multiShot * 0.05,
-      bounceChance: permanentUpgrades.bounce * 0.05
+      damage: baseDamage + (permanentUpgrades.startingDamage * 5),
+      fireRate: baseFireRate + (permanentUpgrades.startingFireRate * 0.5),
+      health: baseHealth + (permanentUpgrades.startingHealth * 25),
+      multiShotCount: permanentUpgrades.multiShot,  // Number of extra projectiles
+      bounceCount: permanentUpgrades.bounce  // Number of chain bounces
     };
   }
 }

@@ -5,9 +5,10 @@ import { TowerRenderer } from './renderers/TowerRenderer';
 import { EnemyRenderer } from './renderers/EnemyRenderer';
 import { ProjectileRenderer } from './renderers/ProjectileRenderer';
 import { EffectsManager } from './effects/EffectsManager';
+import { BackgroundRenderer } from './renderers/BackgroundRenderer';
 import { gameEvents, GameEvents } from './core/EventEmitter';
 import { Enemy } from './entities/Enemy';
-import { EnemyKilledEvent, TowerDamagedEvent } from './core/types';
+import { EnemyKilledEvent } from './core/types';
 import { enemyDefinitions } from './enemies/definitions/EnemyDefinitions';
 import { 
   GAME_SIZE, 
@@ -24,6 +25,7 @@ export class Game extends GameCore {
   private backgroundGraphics!: PIXI.Graphics;
   
   // Renderers
+  private backgroundRenderer!: BackgroundRenderer;
   private towerRenderer!: TowerRenderer;
   private enemyRenderer!: EnemyRenderer;
   private projectileRenderer!: ProjectileRenderer;
@@ -77,9 +79,11 @@ export class Game extends GameCore {
   }
   
   private createBackground() {
+    // Create reactive background
+    this.backgroundRenderer = new BackgroundRenderer(this.gameContainer);
+    
+    // Create border
     this.backgroundGraphics = new PIXI.Graphics();
-    this.backgroundGraphics.rect(0, 0, GAME_SIZE, GAME_SIZE);
-    this.backgroundGraphics.fill({ color: COLORS.BACKGROUND_FILL, alpha: 1 });
     this.backgroundGraphics.setStrokeStyle({ width: 4, color: COLORS.BORDER, alpha: 0.5 });
     this.backgroundGraphics.rect(0, 0, GAME_SIZE, GAME_SIZE);
     this.backgroundGraphics.stroke();
@@ -122,21 +126,30 @@ export class Game extends GameCore {
     // Convert PIXI's deltaTime (in frames) to seconds
     const deltaTime = ticker.deltaTime / FPS;
     
+    // Apply speed multiplier for visual updates to match game logic
+    const visualDeltaTime = deltaTime * (this.gameState.speedMultiplier || 1);
+    
     // Update game logic
     super.update(deltaTime);
     
+    // Get current game state
+    const state = this.getState();
+    const enemies = this.getActiveEnemies();
+    const projectiles = this.getProjectiles();
+    
+    // Update background based on game state
+    this.backgroundRenderer.update(visualDeltaTime, state.wave, enemies.length, projectiles.length);
+    
     // Update effects
-    this.effectsManager.update(deltaTime);
+    this.effectsManager.update(visualDeltaTime);
     
     // Render everything
-    this.renderEntities(deltaTime);
+    this.renderEntities(visualDeltaTime);
     
     // Clean up dead enemy sprites
-    const enemies = this.getActiveEnemies();
     this.enemyRenderer.cleanupInactive(enemies);
     
     // Clean up destroyed projectile sprites
-    const projectiles = this.getProjectiles();
     const activeProjectiles = projectiles.filter(p => !p.isDestroyed);
     this.projectileRenderer.cleanupInactive(activeProjectiles);
   }
@@ -147,7 +160,7 @@ export class Game extends GameCore {
     
     // Render enemies
     const enemies = this.getActiveEnemies();
-    enemies.forEach(enemy => this.enemyRenderer.render(enemy));
+    enemies.forEach(enemy => this.enemyRenderer.render(enemy, deltaTime));
     
     // Render projectiles
     this.getProjectiles().forEach(projectile => this.projectileRenderer.render(projectile, this.effectsManager));
@@ -199,6 +212,9 @@ export class Game extends GameCore {
     
     const enemy = data.enemy;
     this.effectsManager.onEnemyDeath(enemy.x, enemy.y, 0xff0000, enemy.type === 'strong' || enemy.type === 'fast');
+    
+    // Make background react to the kill with bigger ripple
+    this.backgroundRenderer.onImpact(enemy.x, enemy.y, 1.5);
   }
   
   protected onEnemySpawned(enemy: Enemy): void {
@@ -207,15 +223,12 @@ export class Game extends GameCore {
     this.effectsManager.onEnemySpawn(enemy.x, enemy.y, color);
   }
   
-  protected onTowerDamaged(data: TowerDamagedEvent): void {
-    super.onTowerDamaged(data);
-    
-    // Screen shake when tower takes damage
-    this.effectsManager.createScreenShake(10, 0.3);
-  }
-  
   protected onDamageDealt(damage: number, enemy: Enemy): void {
     super.onDamageDealt(damage, enemy);
+    
+    // Create small impact on background when damage is dealt
+    const intensity = Math.min(damage / 50, 0.3);
+    this.backgroundRenderer.onImpact(enemy.x, enemy.y, intensity);
     
     // Show damage numbers and hit effects
     const definition = enemyDefinitions.get(enemy.type);
