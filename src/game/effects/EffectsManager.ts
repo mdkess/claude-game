@@ -12,7 +12,7 @@ export class EffectsManager {
   constructor(parentContainer: PIXI.Container) {
     // Create a dedicated container for all effects
     this.effectsContainer = new PIXI.Container();
-    this.effectsContainer.name = 'effects';
+    this.effectsContainer.label = 'effects';
     parentContainer.addChild(this.effectsContainer);
     
     // Initialize effect systems

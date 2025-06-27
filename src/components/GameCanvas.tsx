@@ -27,11 +27,22 @@ export function GameCanvas() {
   const [canvasKey, setCanvasKey] = useState(0); // Force canvas recreation
   const [debugMode, setDebugMode] = useState(false);
   
-  // Check for debug mode on mount
+  // Check for debug mode on mount and prevent scrolling
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       setDebugMode(params.get('debug') === 'true');
+      
+      // Prevent scrolling on mobile
+      const preventScroll = (e: TouchEvent) => {
+        e.preventDefault();
+      };
+      
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+      
+      return () => {
+        document.removeEventListener('touchmove', preventScroll);
+      };
     }
   }, []);
   
@@ -260,11 +271,12 @@ export function GameCanvas() {
   }, [canvasKey]); // Only reinitialize when canvas key changes (restart)
   
   return (
-    <div ref={containerRef} className="relative w-full h-screen bg-gray-900">
+    <div ref={containerRef} className="fixed inset-0 w-full h-full bg-gray-900 overflow-hidden">
       <canvas 
         key={canvasKey} // This forces React to create a new canvas element
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full touch-none"
+        style={{ touchAction: 'none' }}
       />
       {gameState && (
         <GameUI 

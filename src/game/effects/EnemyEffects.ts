@@ -61,9 +61,8 @@ export class EnemyEffects {
     const particleCount = 8;
     for (let i = 0; i < particleCount; i++) {
       const particle = new PIXI.Graphics();
-      particle.beginFill(color, 0.8);
-      particle.drawCircle(0, 0, 2 + Math.random() * 3);
-      particle.endFill();
+      particle.circle(0, 0, 2 + Math.random() * 3);
+      particle.fill({ color: color, alpha: 0.8 });
       particle.position.set(x, y);
       this.container.addChild(particle);
       
@@ -89,9 +88,8 @@ export class EnemyEffects {
     
     // Impact flash
     const flash = new PIXI.Graphics();
-    flash.beginFill(0xffffff, 0.5);
-    flash.drawCircle(0, 0, 15);
-    flash.endFill();
+    flash.circle(0, 0, 15);
+    flash.fill({ color: 0xffffff, alpha: 0.5 });
     flash.position.set(x, y);
     flash.blendMode = 'add';
     this.container.addChild(flash);
@@ -115,9 +113,8 @@ export class EnemyEffects {
   createDeathEffect(x: number, y: number, enemyColor: number, size: number = 1) {
     // Main explosion
     const explosion = new PIXI.Graphics();
-    explosion.beginFill(enemyColor, 0.8);
-    explosion.drawCircle(0, 0, 20 * size);
-    explosion.endFill();
+    explosion.circle(0, 0, 20 * size);
+    explosion.fill({ color: enemyColor, alpha: 0.8 });
     explosion.position.set(x, y);
     explosion.blendMode = 'add';
     this.container.addChild(explosion);
@@ -138,10 +135,9 @@ export class EnemyEffects {
     const chunkCount = 6 + Math.floor(Math.random() * 4);
     for (let i = 0; i < chunkCount; i++) {
       const chunk = new PIXI.Graphics();
-      chunk.beginFill(enemyColor);
       const chunkSize = 3 + Math.random() * 5 * size;
-      chunk.drawRect(-chunkSize/2, -chunkSize/2, chunkSize, chunkSize);
-      chunk.endFill();
+      chunk.rect(-chunkSize/2, -chunkSize/2, chunkSize, chunkSize);
+      chunk.fill({ color: enemyColor });
       chunk.position.set(x, y);
       chunk.rotation = Math.random() * Math.PI * 2;
       this.container.addChild(chunk);
@@ -168,8 +164,9 @@ export class EnemyEffects {
     // Energy burst for special enemies
     if (size > 1) {
       const burst = new PIXI.Graphics();
-      burst.lineStyle(3, 0xffffff, 0.8);
-      burst.drawCircle(0, 0, 10);
+      burst.setStrokeStyle({ width: 3, color: 0xffffff, alpha: 0.8 });
+      burst.circle(0, 0, 10);
+      burst.stroke();
       burst.position.set(x, y);
       this.container.addChild(burst);
       
@@ -193,8 +190,9 @@ export class EnemyEffects {
   createSpawnEffect(x: number, y: number, color: number) {
     // Portal effect
     const portal = new PIXI.Graphics();
-    portal.lineStyle(2, color, 0.8);
-    portal.drawCircle(0, 0, 5);
+    portal.setStrokeStyle({ width: 2, color: color, alpha: 0.8 });
+    portal.circle(0, 0, 5);
+    portal.stroke();
     portal.position.set(x, y);
     this.container.addChild(portal);
     
@@ -226,9 +224,8 @@ export class EnemyEffects {
     // Energy particles
     for (let i = 0; i < 8; i++) {
       const particle = new PIXI.Graphics();
-      particle.beginFill(color, 0.6);
-      particle.drawCircle(0, 0, 2);
-      particle.endFill();
+      particle.circle(0, 0, 2);
+      particle.fill({ color: color, alpha: 0.6 });
       
       const angle = (Math.PI * 2 * i) / 8;
       const startRadius = 0;
@@ -267,8 +264,9 @@ export class EnemyEffects {
   createShieldHitEffect(x: number, y: number) {
     // Shield ripple
     const ripple = new PIXI.Graphics();
-    ripple.lineStyle(3, 0x0088ff, 0.8);
-    ripple.drawCircle(0, 0, 20);
+    ripple.setStrokeStyle({ width: 3, color: 0x0088ff, alpha: 0.8 });
+    ripple.circle(0, 0, 20);
+    ripple.stroke();
     ripple.position.set(x, y);
     ripple.blendMode = 'add';
     this.container.addChild(ripple);
@@ -287,7 +285,7 @@ export class EnemyEffects {
     
     // Hexagonal pattern
     const hex = new PIXI.Graphics();
-    hex.lineStyle(2, 0x0088ff, 0.5);
+    hex.setStrokeStyle({ width: 2, color: 0x0088ff, alpha: 0.5 });
     for (let i = 0; i < 6; i++) {
       const angle = (Math.PI * 2 * i) / 6;
       const x1 = Math.cos(angle) * 15;
@@ -302,6 +300,7 @@ export class EnemyEffects {
       hex.lineTo(x2, y2);
     }
     hex.closePath();
+    hex.stroke();
     hex.position.set(x, y);
     this.container.addChild(hex);
     
@@ -327,8 +326,8 @@ export class EnemyEffects {
     const crystalCount = 6;
     for (let i = 0; i < crystalCount; i++) {
       const crystal = new PIXI.Graphics();
-      crystal.beginFill(0x88ddff, 0.6);
-      crystal.drawPolygon([0, -5, 3, 0, 0, 5, -3, 0]);
+      crystal.poly([0, -5, 3, 0, 0, 5, -3, 0]);
+      crystal.fill({ color: 0x88ddff, alpha: 0.6 });
       crystal.rotation = (Math.PI * 2 * i) / crystalCount;
       
       const radius = 20;

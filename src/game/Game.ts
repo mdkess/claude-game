@@ -159,9 +159,16 @@ export class Game extends GameCore {
     
     this.app.renderer.resize(width, height);
     
-    const minSize = 400;
-    const maxSize = 1200;
-    const gameSize = Math.max(minSize, Math.min(maxSize, Math.min(width * 0.9, height * 0.9)));
+    // Detect if mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || width < 768;
+    
+    // Adjust sizing for mobile
+    const minSize = isMobile ? 300 : 400;
+    const maxSize = isMobile ? 800 : 1200;
+    const padding = isMobile ? 0.95 : 0.9;
+    
+    // Calculate game size to fit screen
+    const gameSize = Math.max(minSize, Math.min(maxSize, Math.min(width * padding, height * padding)));
     const scale = gameSize / GAME_SIZE;
     
     this.gameContainer.scale.set(scale);

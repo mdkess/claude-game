@@ -51,10 +51,10 @@ export function GameUI({
   return (
     <>
       {/* HUD */}
-      <div className="absolute top-0 left-0 right-0 p-4 pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 p-2 sm:p-4 pointer-events-none">
         <div className="flex justify-center">
           {/* Consolidated HUD Panel */}
-          <div className="bg-gray-900/80 backdrop-blur-sm px-6 py-3 rounded-lg border border-gray-700/50">
+          <div className="bg-gray-900/80 backdrop-blur-sm px-3 sm:px-6 py-2 sm:py-3 rounded-lg border border-gray-700/50 scale-75 sm:scale-100 origin-top">
             <div className="flex items-center gap-6">
               {/* Health Bar */}
               <div className="w-40">
@@ -216,8 +216,8 @@ export function GameUI({
       )}
 
       {/* Upgrade Panels */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 pointer-events-auto">
-        <div className="flex justify-center items-end gap-3">
+      <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4 pointer-events-auto">
+        <div className="flex justify-center items-end gap-2 sm:gap-3 scale-90 sm:scale-100 origin-bottom">
           <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
             {/* Tab Headers */}
             <div className="flex border-b border-gray-700">
