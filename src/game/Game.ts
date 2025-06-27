@@ -143,7 +143,7 @@ export class Game extends GameCore {
   
   private renderEntities(deltaTime: number) {
     // Render tower
-    this.towerRenderer.render(this.getTower(), deltaTime);
+    this.towerRenderer.render(this.getTower(), deltaTime, this.gameState.health);
     
     // Render enemies
     const enemies = this.getActiveEnemies();

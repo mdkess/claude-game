@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { GameState, PermanentUpgrades } from "../game/types";
 import { EssenceMenu } from "./EssenceMenu";
-import { ENEMY_ICONS } from "../game/systems/WaveDefinitions";
+import { HealthBar } from "./ui/HealthBar";
+import { WaveInfo } from "./ui/WaveInfo";
+import { ResourcePanel } from "./ui/ResourcePanel";
+import { EconomicBonuses } from "./ui/EconomicBonuses";
+import { UpgradePanel } from "./ui/UpgradePanel";
+import { GameOverScreen } from "./ui/GameOverScreen";
+import { DebugPanel } from "./ui/DebugPanel";
 
 interface GameUIProps {
   gameState: GameState;
@@ -41,13 +47,7 @@ export function GameUI({
   onToggleSpeed,
 }: GameUIProps) {
   const [showEssenceMenu, setShowEssenceMenu] = useState(false);
-  const [activeTab, setActiveTab] = useState<'offensive' | 'defensive' | 'economic'>('offensive');
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
   return (
     <>
       {/* HUD - Redesigned for mobile */}
@@ -55,263 +55,51 @@ export function GameUI({
         {/* Top bar - core stats */}
         <div className="flex justify-between items-start gap-2 mb-2">
           {/* Left: Health */}
-          <div className="bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700/50 flex-1 max-w-[200px]">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-white text-xs font-bold">Health</span>
-              {gameState.healthRegen && gameState.healthRegen > 0 && (
-                <span className="text-green-400 text-xs">+{gameState.healthRegen.toFixed(1)}/s</span>
-              )}
-            </div>
-            <div className="w-full h-2 bg-gray-700 rounded-full">
-              <div
-                className="h-full bg-green-500 rounded-full transition-all"
-                style={{ width: `${(gameState.health / gameState.maxHealth) * 100}%` }}
-              />
-            </div>
-            <div className="text-white text-xs mt-0.5 text-center">
-              {Math.ceil(gameState.health)} / {gameState.maxHealth}
-            </div>
-          </div>
+          <HealthBar
+            health={gameState.health}
+            maxHealth={gameState.maxHealth}
+            healthRegen={gameState.healthRegen}
+          />
 
           {/* Center: Wave & Time */}
-          <div className="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-700/50">
-            <div className="text-center">
-              <div className="text-white font-bold text-sm">Wave {gameState.wave}</div>
-              <div className="text-gray-400 text-xs">{formatTime(gameState.survivalTime)}</div>
-              {gameState.waveState && !gameState.waveState.isWaveActive && (
-                <div className="text-yellow-400 text-xs animate-pulse mt-1">
-                  Next: {Math.ceil(gameState.waveState.nextWaveTimer)}s
-                </div>
-              )}
-            </div>
-          </div>
+          <WaveInfo
+            wave={gameState.wave}
+            survivalTime={gameState.survivalTime}
+            waveState={gameState.waveState}
+          />
 
-          {/* Right: Resources */}
-          <div className="bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700/50">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <span className="text-yellow-400 text-sm">💰</span>
-                <span className="text-white font-bold text-sm tabular-nums">{gameState.gold}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-purple-400 text-sm">✨</span>
-                <span className="text-white font-bold text-sm tabular-nums">{totalEssence}</span>
-              </div>
-            </div>
-          </div>
+          {/* Right: Resources, Score & Speed */}
+          <ResourcePanel
+            gold={gameState.gold}
+            totalEssence={totalEssence}
+            score={gameState.score}
+            speedMultiplier={gameState.speedMultiplier}
+            onToggleSpeed={onToggleSpeed}
+          />
         </div>
 
-        {/* Wave enemies - separate row, only shown during waves */}
-        {gameState.waveState && gameState.waveState.isWaveActive && gameState.waveState.composition.enemies.length > 0 && (
-          <div className="flex justify-center">
-            <div className="bg-gray-900/80 backdrop-blur-sm px-3 py-1 rounded-lg border border-gray-700/50">
-              <div className="flex items-center gap-2 text-xs">
-                {gameState.waveState.composition.enemies.map((enemy, idx) => {
-                  const enemyInfo = ENEMY_ICONS[enemy.type as keyof typeof ENEMY_ICONS];
-                  const remaining = gameState.waveState?.enemiesRemaining[enemy.type] || 0;
-                  const killed = enemy.count - remaining;
-                  
-                  return (
-                    <div key={idx} className="flex items-center gap-1">
-                      <span style={{ color: enemyInfo?.color || '#fff' }}>
-                        {enemy.icon}
-                      </span>
-                      <span className={`tabular-nums ${
-                        remaining > 0 ? "text-white" : "text-gray-500 line-through"
-                      }`}>
-                        {killed}/{enemy.count}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Score and Speed - Bottom right of HUD */}
-        <div className="absolute top-2 right-2 flex items-center gap-2">
-          <div className="bg-gray-900/80 backdrop-blur-sm px-2 py-1 rounded border border-gray-700/50">
-            <span className="text-gray-400 text-xs">Score: {gameState.score}</span>
-          </div>
-          {onToggleSpeed && (
-            <button
-              onClick={onToggleSpeed}
-              className={`w-8 h-8 rounded text-sm font-bold transition-colors pointer-events-auto flex items-center justify-center ${
-                gameState.speedMultiplier === 2 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                  : 'bg-gray-600 hover:bg-gray-700 text-white'
-              }`}
-              title="Press SPACE to toggle speed"
-            >
-              {gameState.speedMultiplier === 2 ? '2x' : '1x'}
-            </button>
-          )}
-        </div>
-
-        {/* Economic bonuses - shown below resources when active */}
-        {((gameState.goldPerRound && gameState.goldPerRound > 0) || 
-          (gameState.interestRate && gameState.interestRate > 0)) && (
-          <div className="absolute top-14 right-2">
-            <div className="bg-gray-900/80 backdrop-blur-sm px-2 py-1 rounded border border-gray-700/50 text-xs">
-              {gameState.goldPerRound && gameState.goldPerRound > 0 && (
-                <div className="text-yellow-300">+{gameState.goldPerRound}/wave</div>
-              )}
-              {gameState.interestRate && gameState.interestRate > 0 && (
-                <div className="text-green-300">+{(gameState.interestRate * 100).toFixed(0)}%/s</div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Economic bonuses - shown as a second row when active */}
+        <EconomicBonuses
+          goldPerRound={gameState.goldPerRound}
+          interestRate={gameState.interestRate}
+        />
       </div>
 
       {/* Debug Buttons */}
-      {(onDebugDamage || onDebugGold || onDebugEssence) && (
-        <div className="absolute bottom-20 right-4 pointer-events-auto flex flex-col gap-2">
-          {onDebugDamage && (
-            <button
-              onClick={onDebugDamage}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
-            >
-              DEBUG: -100 HP
-            </button>
-          )}
-          {onDebugGold && (
-            <button
-              onClick={onDebugGold}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded text-sm"
-            >
-              DEBUG: +1000 Gold
-            </button>
-          )}
-          {onDebugEssence && (
-            <button
-              onClick={onDebugEssence}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-1 px-3 rounded text-sm"
-            >
-              DEBUG: +100 Essence
-            </button>
-          )}
-        </div>
-      )}
+      <DebugPanel
+        onDebugDamage={onDebugDamage}
+        onDebugGold={onDebugGold}
+        onDebugEssence={onDebugEssence}
+      />
 
       {/* Upgrade Panels */}
       <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4 pointer-events-auto">
         <div className="flex justify-center items-end gap-2 sm:gap-3 scale-90 sm:scale-100 origin-bottom">
-          <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg">
-            {/* Tab Headers */}
-            <div className="flex border-b border-gray-700">
-              <button
-                onClick={() => setActiveTab('offensive')}
-                className={`px-4 py-2 text-sm font-bold transition-all border-b-2 ${
-                  activeTab === 'offensive'
-                    ? 'text-red-400 border-red-500 bg-red-900/20'
-                    : 'text-gray-400 border-transparent hover:text-red-300'
-                }`}
-              >
-                ⚔️ Offensive
-              </button>
-              <button
-                onClick={() => setActiveTab('defensive')}
-                className={`px-4 py-2 text-sm font-bold transition-all border-b-2 ${
-                  activeTab === 'defensive'
-                    ? 'text-blue-400 border-blue-500 bg-blue-900/20'
-                    : 'text-gray-400 border-transparent hover:text-blue-300'
-                }`}
-              >
-                🛡️ Defensive
-              </button>
-              <button
-                onClick={() => setActiveTab('economic')}
-                className={`px-4 py-2 text-sm font-bold transition-all border-b-2 ${
-                  activeTab === 'economic'
-                    ? 'text-yellow-400 border-yellow-500 bg-yellow-900/20'
-                    : 'text-gray-400 border-transparent hover:text-yellow-300'
-                }`}
-              >
-                💰 Economic
-              </button>
-            </div>
-
-            {/* Tab Content */}
-            <div className="p-3">
-              {activeTab === 'offensive' && (
-                <div className="flex gap-2">
-                  <UpgradeButton
-                    label="Damage"
-                    hotkey="1"
-                    cost={upgradeCosts.damage || 50}
-                    canAfford={gameState.gold >= (upgradeCosts.damage || 50)}
-                    level={gameState.upgradeLevels?.damage || 0}
-                    onClick={() => onUpgrade("damage")}
-                    color="red"
-                  />
-                  <UpgradeButton
-                    label="Fire Rate"
-                    hotkey="2"
-                    cost={upgradeCosts.fireRate || 100}
-                    canAfford={gameState.gold >= (upgradeCosts.fireRate || 100)}
-                    level={gameState.upgradeLevels?.fireRate || 0}
-                    onClick={() => onUpgrade("fireRate")}
-                    color="red"
-                  />
-                  <UpgradeButton
-                    label="Range"
-                    hotkey="3"
-                    cost={upgradeCosts.range || 100}
-                    canAfford={gameState.gold >= (upgradeCosts.range || 100)}
-                    level={gameState.upgradeLevels?.range || 0}
-                    onClick={() => onUpgrade("range")}
-                    color="red"
-                  />
-                </div>
-              )}
-              {activeTab === 'defensive' && (
-                <div className="flex gap-2">
-                  <UpgradeButton
-                    label="Max Health"
-                    hotkey="4"
-                    cost={upgradeCosts.maxHealth || 75}
-                    canAfford={gameState.gold >= (upgradeCosts.maxHealth || 75)}
-                    level={gameState.upgradeLevels?.maxHealth || 0}
-                    onClick={() => onUpgrade("maxHealth")}
-                    color="blue"
-                  />
-                  <UpgradeButton
-                    label="Regen"
-                    hotkey="5"
-                    cost={upgradeCosts.healthRegen || 150}
-                    canAfford={gameState.gold >= (upgradeCosts.healthRegen || 150)}
-                    level={gameState.upgradeLevels?.healthRegen || 0}
-                    onClick={() => onUpgrade("healthRegen")}
-                    color="blue"
-                  />
-                </div>
-              )}
-              {activeTab === 'economic' && (
-                <div className="flex gap-2">
-                  <UpgradeButton
-                    label="Gold/Round"
-                    hotkey="6"
-                    cost={upgradeCosts.goldPerRound || 50}
-                    canAfford={gameState.gold >= (upgradeCosts.goldPerRound || 50)}
-                    level={gameState.upgradeLevels?.goldPerRound || 0}
-                    onClick={() => onUpgrade("goldPerRound")}
-                    color="yellow"
-                  />
-                  <UpgradeButton
-                    label="Interest"
-                    hotkey="7"
-                    cost={upgradeCosts.interest || 100}
-                    canAfford={gameState.gold >= (upgradeCosts.interest || 100)}
-                    level={gameState.upgradeLevels?.interest || 0}
-                    onClick={() => onUpgrade("interest")}
-                    color="yellow"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+          <UpgradePanel
+            gameState={gameState}
+            upgradeCosts={upgradeCosts}
+            onUpgrade={onUpgrade}
+          />
 
           {/* Essence Button */}
           <button
@@ -327,33 +115,12 @@ export function GameUI({
 
       {/* Game Over Screen */}
       {isGameOver && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center pointer-events-auto">
-          <div className="bg-gray-800 p-8 rounded-xl text-center border border-gray-700 shadow-2xl">
-            <h2 className="text-3xl font-bold text-white mb-4">Game Over</h2>
-            <div className="text-white mb-2">
-              Final Score:{" "}
-              <span className="text-yellow-400 font-bold">{finalScore}</span>
-            </div>
-            <div className="text-white mb-6">
-              Essence Earned:{" "}
-              <span className="text-purple-400 font-bold">{earnedEssence}</span>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowEssenceMenu(true)}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded"
-              >
-                Spend Essence
-              </button>
-              <button
-                onClick={onRestart}
-                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded"
-              >
-                Play Again
-              </button>
-            </div>
-          </div>
-        </div>
+        <GameOverScreen
+          finalScore={finalScore}
+          earnedEssence={earnedEssence}
+          onShowEssenceMenu={() => setShowEssenceMenu(true)}
+          onRestart={onRestart}
+        />
       )}
 
       {/* Essence Menu */}
@@ -365,55 +132,5 @@ export function GameUI({
         onPurchaseUpgrade={onPurchasePermanentUpgrade}
       />
     </>
-  );
-}
-
-interface UpgradeButtonProps {
-  label: string;
-  hotkey: string;
-  cost: number;
-  canAfford: boolean;
-  level: number;
-  onClick: () => void;
-  color?: 'red' | 'blue' | 'yellow';
-}
-
-function UpgradeButton({
-  label,
-  hotkey,
-  cost,
-  canAfford,
-  level,
-  onClick,
-  color = 'blue',
-}: UpgradeButtonProps) {
-  const colorClasses = {
-    red: canAfford
-      ? "bg-red-600/80 hover:bg-red-600 text-white border border-red-500/50"
-      : "bg-gray-800/80 text-gray-500 cursor-not-allowed border border-gray-700",
-    blue: canAfford
-      ? "bg-blue-600/80 hover:bg-blue-600 text-white border border-blue-500/50"
-      : "bg-gray-800/80 text-gray-500 cursor-not-allowed border border-gray-700",
-    yellow: canAfford
-      ? "bg-yellow-600/80 hover:bg-yellow-600 text-white border border-yellow-500/50"
-      : "bg-gray-800/80 text-gray-500 cursor-not-allowed border border-gray-700",
-  };
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={!canAfford}
-      className={`
-        relative px-3 py-2 rounded-md transition-all min-w-[80px] transform hover:scale-105
-        ${colorClasses[color]}
-      `}
-    >
-      <div className="text-xs absolute top-0.5 left-0.5 opacity-50">[{hotkey}]</div>
-      <div className="text-xs absolute top-0.5 right-0.5 opacity-70">
-        Lv.{level}
-      </div>
-      <div className="font-bold mt-3 text-sm">{label}</div>
-      <div className="text-xs">{cost}g</div>
-    </button>
   );
 }

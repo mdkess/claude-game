@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 import { PermanentUpgrades } from '../game/types';
+import { EssenceUpgradeCard, UpgradeInfo } from './ui/EssenceUpgradeCard';
+import { TabNavigation } from './ui/TabNavigation';
+import { EssenceMenuHeader } from './ui/EssenceMenuHeader';
 
 interface EssenceMenuProps {
   isOpen: boolean;
@@ -9,15 +12,6 @@ interface EssenceMenuProps {
   totalEssence: number;
   permanentUpgrades: PermanentUpgrades;
   onPurchaseUpgrade: (type: keyof PermanentUpgrades) => void;
-}
-
-interface UpgradeInfo {
-  name: string;
-  description: string;
-  effect: string;
-  maxLevel: number;
-  baseCost: number;
-  costScaling: number;
 }
 
 const upgradeInfo: Record<keyof PermanentUpgrades, UpgradeInfo> = {
@@ -79,6 +73,18 @@ const upgradeInfo: Record<keyof PermanentUpgrades, UpgradeInfo> = {
   }
 };
 
+const tabs = [
+  { id: 'offensive', label: 'Offensive', icon: '⚔️', color: 'red' },
+  { id: 'defensive', label: 'Defensive', icon: '🛡️', color: 'blue' },
+  { id: 'economic', label: 'Economic', icon: '💰', color: 'yellow' }
+];
+
+const upgradesByTab: Record<string, Array<keyof PermanentUpgrades>> = {
+  offensive: ['startingDamage', 'startingFireRate', 'multiShot', 'bounce'],
+  defensive: ['startingHealth'],
+  economic: ['goldMultiplier', 'essenceGain']
+};
+
 export function EssenceMenu({ 
   isOpen, 
   onClose, 
@@ -86,7 +92,7 @@ export function EssenceMenu({
   permanentUpgrades, 
   onPurchaseUpgrade 
 }: EssenceMenuProps) {
-  const [activeTab, setActiveTab] = useState<'offensive' | 'defensive' | 'economic'>('offensive');
+  const [activeTab, setActiveTab] = useState('offensive');
   
   if (!isOpen) return null;
 
@@ -96,7 +102,7 @@ export function EssenceMenu({
       ? permanentUpgrades[type] - 1 
       : permanentUpgrades[type];
     
-    if (currentLevel >= info.maxLevel) return -1; // Max level reached
+    if (currentLevel >= info.maxLevel) return -1;
     
     return Math.floor(info.baseCost * Math.pow(info.costScaling, currentLevel));
   };
@@ -116,131 +122,40 @@ export function EssenceMenu({
 
   const getCurrentLevel = (type: keyof PermanentUpgrades): number => {
     if (type === 'goldMultiplier' || type === 'essenceGain') {
-      // Round to avoid floating point display issues
       return Math.round((permanentUpgrades[type] - 1) * 10) / 10;
     }
     return permanentUpgrades[type];
   };
 
-  const renderUpgrade = (type: keyof PermanentUpgrades) => {
-    const info = upgradeInfo[type];
-    const currentLevel = getCurrentLevel(type);
-    const cost = getUpgradeCost(type);
-    const canBuy = canAfford(type);
-    const maxed = isMaxLevel(type);
-
-    return (
-      <div
-        key={type}
-        className={`p-3 rounded-lg border ${
-          maxed 
-            ? 'bg-gray-700/50 border-gray-600' 
-            : canBuy 
-              ? 'bg-gray-700 border-purple-500 hover:border-purple-400' 
-              : 'bg-gray-700/50 border-gray-600'
-        }`}
-      >
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h4 className="text-white font-semibold text-sm">{info.name}</h4>
-              <span className="text-xs text-purple-400">
-                Lv.{currentLevel}/{info.maxLevel}
-              </span>
-            </div>
-            <p className="text-gray-400 text-xs mt-1">{info.description}</p>
-            <p className="text-green-400 text-xs">{info.effect}</p>
-          </div>
-          
-          <button
-            onClick={() => onPurchaseUpgrade(type)}
-            disabled={!canBuy || maxed}
-            className={`ml-4 px-3 py-1.5 rounded text-sm font-bold transition-colors ${
-              maxed
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : canBuy
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {maxed ? 'MAX' : `${cost}`}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center pointer-events-auto z-50 backdrop-blur-sm">
       <div className="bg-gray-800 rounded-xl max-w-3xl w-full mx-4 max-h-[85vh] flex flex-col shadow-2xl border border-gray-700">
-        <div className="p-6 pb-4 border-b border-gray-700">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Essence Upgrades</h2>
-              <div className="text-purple-400 text-lg font-bold mt-1">
-                <span className="text-sm text-gray-400">Available:</span> {totalEssence} Essence
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white text-3xl leading-none p-2"
-            >
-              ×
-            </button>
-          </div>
-        </div>
+        <EssenceMenuHeader 
+          totalEssence={totalEssence}
+          onClose={onClose}
+        />
 
-        {/* Tab Headers */}
-        <div className="flex border-b border-gray-700">
-          <button
-            onClick={() => setActiveTab('offensive')}
-            className={`px-6 py-3 text-sm font-bold transition-all border-b-2 flex-1 ${
-              activeTab === 'offensive'
-                ? 'text-red-400 border-red-500 bg-red-900/20'
-                : 'text-gray-400 border-transparent hover:text-red-300'
-            }`}
-          >
-            ⚔️ Offensive
-          </button>
-          <button
-            onClick={() => setActiveTab('defensive')}
-            className={`px-6 py-3 text-sm font-bold transition-all border-b-2 flex-1 ${
-              activeTab === 'defensive'
-                ? 'text-blue-400 border-blue-500 bg-blue-900/20'
-                : 'text-gray-400 border-transparent hover:text-blue-300'
-            }`}
-          >
-            🛡️ Defensive
-          </button>
-          <button
-            onClick={() => setActiveTab('economic')}
-            className={`px-6 py-3 text-sm font-bold transition-all border-b-2 flex-1 ${
-              activeTab === 'economic'
-                ? 'text-yellow-400 border-yellow-500 bg-yellow-900/20'
-                : 'text-gray-400 border-transparent hover:text-yellow-300'
-            }`}
-          >
-            💰 Economic
-          </button>
-        </div>
+        <TabNavigation
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
         {/* Tab Content */}
         <div className="overflow-y-auto p-6">
-          {activeTab === 'offensive' && (
-            <div className="space-y-3">
-              {(['startingDamage', 'startingFireRate', 'multiShot', 'bounce'] as Array<keyof PermanentUpgrades>).map(type => renderUpgrade(type))}
-            </div>
-          )}
-          {activeTab === 'defensive' && (
-            <div className="space-y-3">
-              {(['startingHealth'] as Array<keyof PermanentUpgrades>).map(type => renderUpgrade(type))}
-            </div>
-          )}
-          {activeTab === 'economic' && (
-            <div className="space-y-3">
-              {(['goldMultiplier', 'essenceGain'] as Array<keyof PermanentUpgrades>).map(type => renderUpgrade(type))}
-            </div>
-          )}
+          <div className="space-y-3">
+            {upgradesByTab[activeTab].map(type => (
+              <EssenceUpgradeCard
+                key={type}
+                info={upgradeInfo[type]}
+                currentLevel={getCurrentLevel(type)}
+                cost={getUpgradeCost(type)}
+                canAfford={canAfford(type)}
+                isMaxLevel={isMaxLevel(type)}
+                onPurchase={() => onPurchaseUpgrade(type)}
+              />
+            ))}
+          </div>
 
           <div className="mt-6 pt-4 border-t border-gray-700">
             <p className="text-gray-400 text-sm">

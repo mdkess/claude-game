@@ -36,7 +36,7 @@ export class WaveSystem {
       enemiesRemaining: new Map(),
       totalEnemiesRemaining: 0,
       enemiesKilled: 0,
-      nextWaveTimer: 2, // Start first wave after 2 seconds
+      nextWaveTimer: 0.5, // Start first wave quickly
       composition: getWaveComposition(1)
     };
     
