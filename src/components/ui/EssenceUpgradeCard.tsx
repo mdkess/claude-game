@@ -1,15 +1,8 @@
 
-export interface UpgradeInfo {
-  name: string;
-  description: string;
-  effect: string;
-  maxLevel: number;
-  baseCost: number;
-  costScaling: number;
-}
+import { PermanentUpgradeInfo } from '../../game/systems/PermanentUpgradeSystem';
 
 interface EssenceUpgradeCardProps {
-  info: UpgradeInfo;
+  info: PermanentUpgradeInfo;
   currentLevel: number;
   cost: number;
   canAfford: boolean;

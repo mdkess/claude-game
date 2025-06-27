@@ -5,16 +5,12 @@ import { Projectile } from '../entities/Projectile';
 import { WaveSystem } from '../systems/WaveSystem';
 import { CombatSystem } from '../systems/CombatSystem';
 import { UpgradeSystem } from '../systems/UpgradeSystem';
+import { PermanentUpgradeSystem } from '../systems/PermanentUpgradeSystem';
 import { gameEvents, GameEvents } from './EventEmitter';
 import { EnemyKilledEvent, TowerDamagedEvent } from './types';
 import { 
   GAME_CENTER,
   DEFAULT_HEALTH,
-  HEALTH_PER_PERMANENT_UPGRADE,
-  DAMAGE_PER_PERMANENT_UPGRADE,
-  FIRE_RATE_PER_PERMANENT_UPGRADE,
-  MULTI_SHOT_CHANCE_PER_UPGRADE,
-  BOUNCE_CHANCE_PER_UPGRADE,
   ESSENCE_CONVERSION_RATE,
   STARTING_GOLD,
   SPEED_BOOST_DURATION,
@@ -43,6 +39,7 @@ export class GameCore {
   protected waveSystem: WaveSystem;
   protected combatSystem: CombatSystem;
   protected upgradeSystem: UpgradeSystem;
+  protected permanentUpgradeSystem: PermanentUpgradeSystem;
   
   // Event handlers
   private eventHandlers = {
@@ -66,12 +63,21 @@ export class GameCore {
       bounce: 0
     };
     
+    // Initialize permanent upgrade system
+    this.permanentUpgradeSystem = new PermanentUpgradeSystem();
+    
     // Initialize tower
     const towerStats = this.getInitialTowerStats();
     this.tower = new Tower(GAME_CENTER, GAME_CENTER, towerStats);
     
     // Initialize game state
-    const baseHealth = DEFAULT_HEALTH + this.permanentUpgrades.startingHealth * HEALTH_PER_PERMANENT_UPGRADE;
+    const upgradedStats = this.permanentUpgradeSystem.applyPermanentUpgrades(
+      10, // base damage (not used here)
+      2,  // base fire rate (not used here)
+      DEFAULT_HEALTH,
+      this.permanentUpgrades
+    );
+    const baseHealth = upgradedStats.health;
     this.gameState = {
       health: baseHealth,
       maxHealth: baseHealth,
@@ -114,13 +120,27 @@ export class GameCore {
   }
   
   protected getInitialTowerStats() {
-    return {
-      damage: 10 + this.permanentUpgrades.startingDamage * DAMAGE_PER_PERMANENT_UPGRADE,
-      fireRate: 2 + this.permanentUpgrades.startingFireRate * FIRE_RATE_PER_PERMANENT_UPGRADE,
+    const baseStats = {
+      damage: 10,
+      fireRate: 2,
       range: 200,
-      projectileSpeed: 300, // pixels per second
-      multiShotChance: this.permanentUpgrades.multiShot * MULTI_SHOT_CHANCE_PER_UPGRADE,
-      bounceChance: this.permanentUpgrades.bounce * BOUNCE_CHANCE_PER_UPGRADE
+      projectileSpeed: 300
+    };
+    
+    const upgradedStats = this.permanentUpgradeSystem.applyPermanentUpgrades(
+      baseStats.damage,
+      baseStats.fireRate,
+      DEFAULT_HEALTH,
+      this.permanentUpgrades
+    );
+    
+    return {
+      damage: upgradedStats.damage,
+      fireRate: upgradedStats.fireRate,
+      range: baseStats.range,
+      projectileSpeed: baseStats.projectileSpeed,
+      multiShotChance: upgradedStats.multiShotChance,
+      bounceChance: upgradedStats.bounceChance
     };
   }
   
