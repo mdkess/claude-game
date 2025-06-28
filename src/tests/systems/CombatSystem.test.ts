@@ -28,7 +28,6 @@ describe('CombatSystem', () => {
 
     it('should reuse projectiles from pool', () => {
       const projectile = combatSystem['getProjectileFromPool']();
-      const initialId = projectile?.id;
       
       if (projectile) {
         combatSystem.releaseProjectile(projectile);

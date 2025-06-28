@@ -1,5 +1,7 @@
 import { Enemy } from '@/game/entities/Enemy';
 import { EnemyType, TowerStats } from '@/game/types';
+import { StraightMovement } from '@/game/enemies/strategies/MovementStrategies';
+import { NormalDeath } from '@/game/enemies/strategies/DeathStrategy';
 
 export function createMockEnemy(overrides: Partial<{
   x: number;
@@ -14,11 +16,13 @@ export function createMockEnemy(overrides: Partial<{
     x: 100,
     y: 100,
     health: 50,
+    maxHealth: 50,
     speed: 50,
+    damage: 10,
     reward: 10,
     type: EnemyType.Basic,
-    movementStrategy: 'direct',
-    deathStrategy: 'normal',
+    movementStrategy: new StraightMovement(50),
+    deathStrategy: new NormalDeath(),
     ...overrides
   });
   
