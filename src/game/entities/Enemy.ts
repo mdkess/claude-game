@@ -55,8 +55,6 @@ export class Enemy {
     this.movementStrategy = config.movementStrategy;
     this.deathStrategy = config.deathStrategy;
     
-    console.log(`[Enemy] Initialized enemy - Type: ${this.type}, Health: ${this.health}, Reward: ${this.reward}`);
-    
     // Set radius based on enemy type
     switch (this.type) {
       case EnemyType.Swarm:
@@ -102,7 +100,6 @@ export class Enemy {
   takeDamage(damage: number): void {
     if (this.isDead || !this.isActive) return;
     
-    console.log(`[Enemy] Taking damage: ${damage}, Current health: ${this.health}`);
     this.health -= damage;
     this.lastDamageTime = Date.now();
     

@@ -2,7 +2,7 @@ import { GameState, TowerStats, UpgradeLevel, MiniUpgradeLevel, MiniUpgradeType 
 
 export class UpgradeSystem {
   private gameState: GameState;
-  private towerStats: TowerStats;
+  private baseTowerStats: TowerStats;
   private upgradeLevels: UpgradeLevel = {
     damage: 0,
     fireRate: 0,
@@ -45,9 +45,9 @@ export class UpgradeSystem {
     interest: 1.8       // Reduced from 2.0
   };
   
-  constructor(gameState: GameState, towerStats: TowerStats) {
+  constructor(gameState: GameState, baseTowerStats: TowerStats) {
     this.gameState = gameState;
-    this.towerStats = towerStats;
+    this.baseTowerStats = { ...baseTowerStats }; // Make a copy to avoid mutations
   }
   
   getUpgradeCost(type: keyof UpgradeLevel): number {
@@ -75,10 +75,10 @@ export class UpgradeSystem {
     // Apply upgrade effects
     switch (type) {
       case 'damage':
-        this.towerStats.damage += 5;
+        // Damage increase handled in getCurrentTowerStats
         break;
       case 'fireRate':
-        this.towerStats.fireRate += 0.5;
+        // Fire rate increase handled in getCurrentTowerStats
         break;
       case 'maxHealth':
         this.gameState.maxHealth += 20;
@@ -88,7 +88,7 @@ export class UpgradeSystem {
         // Health regen handled in game update loop
         break;
       case 'range':
-        this.towerStats.range += 25;
+        // Range increase handled in getCurrentTowerStats
         break;
       case 'goldPerRound':
         // Gold per round handled in game update loop
@@ -134,10 +134,10 @@ export class UpgradeSystem {
     // Apply mini-upgrade effects
     switch (type) {
       case 'quickShot':
-        this.towerStats.fireRate += 0.2; // +10% fire rate
+        // Fire rate increase handled in getCurrentTowerStats
         break;
       case 'sharpAmmo':
-        this.towerStats.damage += 2;
+        // Damage increase handled in getCurrentTowerStats
         break;
       case 'bandages':
         this.gameState.maxHealth += 10;
@@ -154,13 +154,22 @@ export class UpgradeSystem {
   
   // Apply all mini-upgrade bonuses to base stats
   applyMiniUpgradeBonuses(): void {
-    // Applied when tower stats are recalculated
-    this.towerStats.fireRate += this.miniUpgradeLevels.quickShot * 0.2;
-    this.towerStats.damage += this.miniUpgradeLevels.sharpAmmo * 2;
-    // Health is applied immediately, not here
+    // This method is no longer needed - bonuses are calculated in getCurrentTowerStats
   }
   
   getCurrentTowerStats(): TowerStats {
-    return { ...this.towerStats };
+    // Calculate current stats based on base stats and upgrades
+    const stats = { ...this.baseTowerStats };
+    
+    // Apply regular upgrades
+    stats.damage += this.upgradeLevels.damage * 5;
+    stats.fireRate += this.upgradeLevels.fireRate * 0.5;
+    stats.range += this.upgradeLevels.range * 25;
+    
+    // Apply mini-upgrades
+    stats.damage += this.miniUpgradeLevels.sharpAmmo * 2;
+    stats.fireRate += this.miniUpgradeLevels.quickShot * 0.2;
+    
+    return stats;
   }
 }

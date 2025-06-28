@@ -38,7 +38,7 @@ This entire game was created by Claude Code, showcasing how AI can build product
 ```bash
 # Clone the repository
 git clone https://github.com/mdkess/claude-game.git
-cd tower-defense-game
+cd claude-game
 
 # Install dependencies
 npm install

@@ -14,8 +14,8 @@ export class CombatSystem {
   constructor(tower: Tower) {
     this.tower = tower;
     
-    // Pre-populate projectile pool
-    for (let i = 0; i < 50; i++) {
+    // Pre-populate projectile pool with more projectiles for multi-shot
+    for (let i = 0; i < 200; i++) {
       this.projectilePool.push(new Projectile());
     }
   }
@@ -46,6 +46,7 @@ export class CombatSystem {
     // Determine total projectiles to fire
     const extraProjectiles = this.tower.stats.multiShotCount || 0;
     const totalProjectiles = 1 + extraProjectiles;
+    
     
     // Emit tower shoot event
     gameEvents.emit(GameEvents.TowerShoot, {

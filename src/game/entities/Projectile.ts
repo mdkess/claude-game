@@ -29,7 +29,7 @@ export class Projectile {
   public y: number = 0;
   public damage: number = 0;
   public isDestroyed: boolean = false;
-  public id: number = Date.now() + Math.random();
+  public id: number = 0;
   
   private velocityX: number = 0;
   private velocityY: number = 0;
@@ -41,6 +41,9 @@ export class Projectile {
   private hitTargets: Set<ProjectileTarget> = new Set();
   
   init(config: ProjectileConfig): void {
+    // Generate new ID for each projectile initialization
+    this.id = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+    
     this.x = config.x;
     this.y = config.y;
     this.speed = config.speed;
@@ -48,20 +51,25 @@ export class Projectile {
     this.damage = config.damage;
     this.bounceChance = config.bounceChance || 0;  // Legacy
     this.bounceCount = config.bounceCount || 0;
-    this.id = Date.now() + Math.random(); // Generate new ID on init
     
     // Calculate initial velocity
-    const direction = normalizeVector(
-      config.targetX - config.x,
-      config.targetY - config.y
-    );
+    const dx = config.targetX - config.x;
+    const dy = config.targetY - config.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
     
-    this.velocityX = direction.x * this.speed;
-    this.velocityY = direction.y * this.speed;
+    if (distance === 0) {
+      this.velocityX = 0;
+      this.velocityY = 0;
+    } else {
+      const direction = normalizeVector(dx, dy);
+      this.velocityX = direction.x * this.speed;
+      this.velocityY = direction.y * this.speed;
+    }
     
     this.isDestroyed = false;
     this.distanceTraveled = 0;
     this.hitTargets.clear();
+    
   }
   
   reset(): void {
@@ -105,13 +113,20 @@ export class Projectile {
   }
   
   checkCollision(target: ProjectileTarget): boolean {
-    if (target.isDead || !target.isActive || this.hitTargets.has(target)) return false;
+    if (this.isDestroyed) {
+      return false;
+    }
+    
+    if (target.isDead || !target.isActive || this.hitTargets.has(target)) {
+      return false;
+    }
     
     const dx = this.x - target.x;
     const dy = this.y - target.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
+    const combinedRadius = target.getRadius() + 5; // 5 is projectile collision radius
     
-    return distance < target.getRadius() + 5; // 5 is projectile collision radius
+    return distance < combinedRadius;
   }
   
   onHit(target: ProjectileTarget, allTargets: ProjectileTarget[]): void {

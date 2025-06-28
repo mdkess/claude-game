@@ -26,6 +26,8 @@ export function GameCanvas() {
   });
   const [canvasKey, setCanvasKey] = useState(0); // Force canvas recreation
   const [debugMode, setDebugMode] = useState(false);
+  const [upgradesLoaded, setUpgradesLoaded] = useState(false);
+  const [initialUpgrades, setInitialUpgrades] = useState<PermanentUpgrades | null>(null);
   
   // Check for debug mode on mount and prevent scrolling
   useEffect(() => {
@@ -205,7 +207,7 @@ export function GameCanvas() {
     if (savedUpgrades) {
       const parsed = JSON.parse(savedUpgrades);
       // Ensure new properties exist for backwards compatibility
-      setPermanentUpgrades({
+      const upgrades = {
         startingDamage: parsed.startingDamage || 0,
         startingFireRate: parsed.startingFireRate || 0,
         startingHealth: parsed.startingHealth || 0,
@@ -213,20 +215,34 @@ export function GameCanvas() {
         essenceGain: parsed.essenceGain || 1,
         multiShot: parsed.multiShot || 0,
         bounce: parsed.bounce || 0
+      };
+      setPermanentUpgrades(upgrades);
+      setInitialUpgrades(upgrades);
+    } else {
+      // Set default upgrades as initial
+      setInitialUpgrades({
+        startingDamage: 0,
+        startingFireRate: 0,
+        startingHealth: 0,
+        goldMultiplier: 1,
+        essenceGain: 1,
+        multiShot: 0,
+        bounce: 0
       });
     }
+    setUpgradesLoaded(true);
   }, []);
   
-  // Initialize game when canvas changes
+  // Initialize game when canvas changes and upgrades are loaded
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !upgradesLoaded) return;
     
     let mounted = true;
     let gameInstance: Game | null = null;
     
     const initGame = async () => {
-      // Use current permanent upgrades when creating game
-      const game = new Game(permanentUpgrades);
+      // Use initial upgrades when creating game (not current ones that may have changed)
+      const game = new Game(initialUpgrades || permanentUpgrades);
       gameInstance = game;
       
       if (!mounted) {
@@ -273,7 +289,7 @@ export function GameCanvas() {
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canvasKey]); // Only reinitialize when canvas key changes (restart)
+  }, [canvasKey, upgradesLoaded]); // Only reinitialize when canvas key changes or upgrades first load
   
   return (
     <div ref={containerRef} className="fixed inset-0 w-full h-full bg-gray-900 overflow-hidden">

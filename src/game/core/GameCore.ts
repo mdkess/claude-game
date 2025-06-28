@@ -244,15 +244,29 @@ export class GameCore {
     const enemies = this.waveSystem.getActiveEnemies();
     this.combatSystem.update(adjustedDeltaTime, enemies, this.projectiles);
     
-    // Update projectiles
-    this.projectiles.forEach(p => p.update(adjustedDeltaTime, enemies));
+    // Update projectiles (skip destroyed ones as safety check)
+    this.projectiles.forEach(p => {
+      if (!p.isDestroyed) {
+        p.update(adjustedDeltaTime, enemies);
+      }
+    });
     
     // Check collisions
     this.checkCollisions(enemies);
     
     // Clean up dead entities and return to pool
     const activeProjectiles: Projectile[] = [];
+    const seenIds = new Set<number>();
+    const duplicateIds = new Set<number>();
+    
     this.projectiles.forEach(p => {
+      if (seenIds.has(p.id)) {
+        duplicateIds.add(p.id);
+        // Skip duplicates - don't add to active array
+        return;
+      }
+      seenIds.add(p.id);
+      
       if (p.isDestroyed) {
         this.combatSystem.releaseProjectile(p);
       } else {
@@ -260,6 +274,11 @@ export class GameCore {
       }
     });
     this.projectiles = activeProjectiles;
+    
+    // Only log if we actually found duplicates (keep this for debugging edge cases)
+    if (duplicateIds.size > 0) {
+      console.warn(`[GameCore] Removed ${duplicateIds.size} duplicate projectiles`);
+    }
     
     // Update game state from wave system
     this.gameState.wave = this.waveSystem.getCurrentWave();
@@ -269,6 +288,10 @@ export class GameCore {
     // Projectile-enemy collisions
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const projectile = this.projectiles[i];
+      
+      if (projectile.isDestroyed) {
+        continue;
+      }
       
       for (const enemy of enemies) {
         if (projectile.checkCollision(enemy)) {
