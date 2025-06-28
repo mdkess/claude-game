@@ -5,7 +5,7 @@ interface EssenceMenuHeaderProps {
 
 export function EssenceMenuHeader({ totalEssence, onClose }: EssenceMenuHeaderProps) {
   return (
-    <div className="p-6 pb-4 border-b border-gray-700">
+    <div className="p-6 pb-4">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-white">Essence Upgrades</h2>

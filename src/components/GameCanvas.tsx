@@ -33,16 +33,21 @@ export function GameCanvas() {
       const params = new URLSearchParams(window.location.search);
       setDebugMode(params.get('debug') === 'true');
       
-      // Prevent scrolling on mobile
-      const preventScroll = (e: TouchEvent) => {
-        e.preventDefault();
-      };
-      
-      document.addEventListener('touchmove', preventScroll, { passive: false });
-      
-      return () => {
-        document.removeEventListener('touchmove', preventScroll);
-      };
+      // Only prevent default touch behavior on the canvas itself, not UI elements
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const preventCanvasScroll = (e: TouchEvent) => {
+          if (e.target === canvas) {
+            e.preventDefault();
+          }
+        };
+        
+        canvas.addEventListener('touchmove', preventCanvasScroll, { passive: false });
+        
+        return () => {
+          canvas.removeEventListener('touchmove', preventCanvasScroll);
+        };
+      }
     }
   }, []);
   
@@ -275,7 +280,7 @@ export function GameCanvas() {
       <canvas 
         key={canvasKey} // This forces React to create a new canvas element
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full touch-none"
+        className="absolute inset-0 w-full h-full"
         style={{ touchAction: 'none' }}
       />
       {gameState && (

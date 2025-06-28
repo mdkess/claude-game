@@ -14,26 +14,28 @@ export function ResourcePanel({
   onToggleSpeed 
 }: ResourcePanelProps) {
   return (
-    <div className="flex items-start gap-2">
-      <div className="bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-700/50">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="text-yellow-400 text-sm">💰</span>
-            <span className="text-white font-bold text-sm tabular-nums">{gold}</span>
+    <div className="flex items-start gap-1 sm:gap-2">
+      <div className="bg-gray-900/80 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-700/50">
+        <div className="flex flex-row sm:flex-col gap-3 sm:gap-1">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-yellow-400 text-xs sm:text-sm">💰</span>
+            <span className="text-white font-bold text-xs sm:text-sm tabular-nums">{gold}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-purple-400 text-sm">✨</span>
-            <span className="text-white font-bold text-sm tabular-nums">{totalEssence}</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <span className="text-purple-400 text-xs sm:text-sm">✨</span>
+            <span className="text-white font-bold text-xs sm:text-sm tabular-nums">{totalEssence}</span>
           </div>
-          <div className="text-gray-400 text-xs mt-1">
-            Score: {score}
+          <div className="flex items-center gap-1 text-gray-400 text-[10px] sm:text-xs">
+            <span className="hidden sm:inline">Score:</span>
+            <span className="sm:hidden">📊</span>
+            <span>{score}</span>
           </div>
         </div>
       </div>
       {onToggleSpeed && (
         <button
           onClick={onToggleSpeed}
-          className={`w-8 h-8 rounded text-sm font-bold transition-colors pointer-events-auto flex items-center justify-center ${
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded text-xs sm:text-sm font-bold transition-colors pointer-events-auto flex items-center justify-center ${
             speedMultiplier === 2 
               ? 'bg-green-600 hover:bg-green-700 text-white' 
               : 'bg-gray-600 hover:bg-gray-700 text-white'

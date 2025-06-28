@@ -236,10 +236,6 @@ export class Game extends GameCore {
     this.effectsManager.onEnemyHit(enemy.x, enemy.y, damage, color, damage > 50);
   }
   
-  // Override tower shoot to add muzzle flash
-  protected onTowerShoot(x: number, y: number, angle: number): void {
-    this.effectsManager.onTowerShoot(x, y, angle, false);
-  }
   
   // Override upgrade purchase to add visual feedback
   purchaseUpgrade(type: 'damage' | 'fireRate' | 'maxHealth' | 'healthRegen' | 'range' | 'goldPerRound' | 'interest'): boolean {

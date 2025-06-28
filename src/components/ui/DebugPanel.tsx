@@ -10,7 +10,7 @@ export function DebugPanel({ onDebugDamage, onDebugGold, onDebugEssence }: Debug
   }
 
   return (
-    <div className="absolute bottom-20 right-4 pointer-events-auto flex flex-col gap-2">
+    <div className="absolute bottom-48 sm:bottom-20 right-2 sm:right-4 pointer-events-auto flex flex-col gap-1 sm:gap-2 scale-90 sm:scale-100 origin-bottom-right">
       {onDebugDamage && (
         <button
           onClick={onDebugDamage}

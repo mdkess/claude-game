@@ -26,19 +26,19 @@ export function WaveInfo({ wave, survivalTime, waveState }: WaveInfoProps) {
   }
 
   return (
-    <div className="bg-gray-900/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-700/50">
+    <div className="bg-gray-900/80 backdrop-blur-sm px-2 sm:px-4 py-1 sm:py-2 rounded-lg border border-gray-700/50">
       <div className="text-center">
-        <div className="text-white font-bold text-sm">
+        <div className="text-white font-bold text-[11px] sm:text-sm">
           Wave {wave}
           {waveState && waveState.isWaveActive && totalEnemies > 0 && (
-            <span className="text-gray-400 text-xs ml-2">
+            <span className="text-gray-400 text-[10px] sm:text-xs ml-1 sm:ml-2">
               ({killedEnemies}/{totalEnemies})
             </span>
           )}
         </div>
-        <div className="text-gray-400 text-xs">{formatTime(survivalTime)}</div>
+        <div className="text-gray-400 text-[10px] sm:text-xs">{formatTime(survivalTime)}</div>
         {waveState && !waveState.isWaveActive && (
-          <div className="text-yellow-400 text-xs animate-pulse mt-1">
+          <div className="text-yellow-400 text-[10px] sm:text-xs animate-pulse mt-0.5 sm:mt-1">
             Next: {Math.ceil(waveState.nextWaveTimer)}s
           </div>
         )}

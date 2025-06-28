@@ -23,10 +23,12 @@ html, body {
   width: 100%;
   height: 100%;
   position: fixed;
-  touch-action: none;
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
+}
+
+/* Ensure smooth scrolling on mobile devices */
+.scrollbar-custom {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 * {

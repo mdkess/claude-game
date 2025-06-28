@@ -48,10 +48,10 @@ export function EssenceMenu({
           onClose={onClose}
         />
 
-        <div className="overflow-y-auto p-4 space-y-4 scrollbar-custom">
+        <div className="overflow-y-auto px-4 py-0 space-y-4 scrollbar-custom">
           {/* Offensive Upgrades */}
-          <div>
-            <h3 className="text-red-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 -mt-2 z-10">
+          <div className="pt-4">
+            <h3 className="text-red-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 -mx-4 px-4 z-10">
               ⚔️ Offensive Upgrades
             </h3>
             <div className="space-y-2 mt-2">
@@ -71,7 +71,7 @@ export function EssenceMenu({
 
           {/* Defensive Upgrades */}
           <div>
-            <h3 className="text-blue-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 z-10">
+            <h3 className="text-blue-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 -mx-4 px-4 z-10">
               🛡️ Defensive Upgrades
             </h3>
             <div className="space-y-2 mt-2">
@@ -90,8 +90,8 @@ export function EssenceMenu({
           </div>
 
           {/* Economic Upgrades */}
-          <div>
-            <h3 className="text-yellow-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 z-10">
+          <div className="pb-4">
+            <h3 className="text-yellow-400 font-bold text-sm flex items-center gap-2 sticky top-0 bg-gray-800 py-2 -mx-4 px-4 z-10">
               💰 Economic Upgrades
             </h3>
             <div className="space-y-2 mt-2">
