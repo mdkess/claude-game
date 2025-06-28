@@ -6,6 +6,7 @@ import { WaveSystem } from '../systems/WaveSystem';
 import { CombatSystem } from '../systems/CombatSystem';
 import { UpgradeSystem } from '../systems/UpgradeSystem';
 import { PermanentUpgradeSystem } from '../systems/PermanentUpgradeSystem';
+import { TemporaryEffects } from '../systems/TemporaryEffects';
 import { gameEvents, GameEvents } from './EventEmitter';
 import { EnemyKilledEvent, TowerDamagedEvent } from './types';
 import { 
@@ -20,7 +21,8 @@ import {
   KILL_STREAK_THRESHOLD,
   KILL_STREAK_TIME_WINDOW,
   KILL_STREAK_DAMAGE_BONUS,
-  KILL_STREAK_DURATION
+  KILL_STREAK_DURATION,
+  UPGRADE_VALUES
 } from './constants';
 
 /**
@@ -40,6 +42,7 @@ export class GameCore {
   protected combatSystem: CombatSystem;
   protected upgradeSystem: UpgradeSystem;
   protected permanentUpgradeSystem: PermanentUpgradeSystem;
+  protected temporaryEffects: TemporaryEffects;
   
   // Event handlers
   private eventHandlers = {
@@ -79,6 +82,7 @@ export class GameCore {
     );
     const baseHealth = upgradedStats.health;
     this.gameState = {
+      // Core state
       health: baseHealth,
       maxHealth: baseHealth,
       gold: STARTING_GOLD,
@@ -88,18 +92,8 @@ export class GameCore {
       isPaused: false,
       isGameOver: false,
       speedMultiplier: 1,
+      // Tower state
       towerStats: { ...towerStats },
-      speedBoostActive: false,
-      speedBoostCooldown: 0,
-      speedBoostDuration: 0,
-      waveStartHealth: baseHealth,
-      perfectWaveStreak: 0,
-      killStreak: 0,
-      killStreakTimer: 0,
-      killStreakActive: false,
-      goldPerRound: 0,
-      interestRate: 0,
-      lastInterestTime: 0,
       upgradeLevels: {
         damage: 0,
         fireRate: 0,
@@ -108,13 +102,41 @@ export class GameCore {
         range: 0,
         goldPerRound: 0,
         interest: 0
-      }
+      },
+      // Ability state
+      speedBoostActive: false,
+      speedBoostCooldown: 0,
+      speedBoostDuration: 0,
+      // Kill streak state
+      killStreak: 0,
+      killStreakTimer: 0,
+      killStreakActive: false,
+      // Wave tracking state
+      waveStartHealth: baseHealth,
+      perfectWaveStreak: 0,
+      enemyCount: 0,
+      waveState: {
+        currentWave: 1,
+        isWaveActive: false,
+        enemiesRemaining: {},
+        totalEnemiesRemaining: 0,
+        nextWaveTimer: 0,
+        composition: {
+          enemies: []
+        }
+      },
+      // Economic state
+      goldPerRound: 0,
+      interestRate: 0,
+      lastInterestTime: 0,
+      healthRegen: 0
     };
     
     // Initialize systems
     this.waveSystem = new WaveSystem();
     this.combatSystem = new CombatSystem(this.tower);
     this.upgradeSystem = new UpgradeSystem(this.gameState, towerStats);
+    this.temporaryEffects = new TemporaryEffects();
     
     this.setupEventListeners();
   }
@@ -220,6 +242,9 @@ export class GameCore {
     
     // Update survival time
     this.gameState.survivalTime += adjustedDeltaTime;
+    
+    // Update temporary effects
+    this.temporaryEffects.update(adjustedDeltaTime);
     
     // Update speed boost ability
     this.updateSpeedBoost(adjustedDeltaTime);
@@ -384,10 +409,10 @@ export class GameCore {
       // Update economic values
       if (type === 'goldPerRound') {
         const level = this.upgradeSystem.getUpgradeLevels().goldPerRound;
-        this.gameState.goldPerRound = level * 15; // 15 gold per level
+        this.gameState.goldPerRound = level * UPGRADE_VALUES.GOLD_PER_ROUND;
       } else if (type === 'interest') {
         const level = this.upgradeSystem.getUpgradeLevels().interest;
-        this.gameState.interestRate = level * 0.02; // 2% interest per level
+        this.gameState.interestRate = level * UPGRADE_VALUES.INTEREST_RATE;
       }
     }
     return success;
@@ -411,20 +436,20 @@ export class GameCore {
   
   // Ability methods
   private updateSpeedBoost(deltaTime: number): void {
-    if (this.gameState.speedBoostCooldown! > 0) {
-      this.gameState.speedBoostCooldown! -= deltaTime;
+    if (this.gameState.speedBoostCooldown > 0) {
+      this.gameState.speedBoostCooldown -= deltaTime;
     }
     
-    if (this.gameState.speedBoostActive && this.gameState.speedBoostDuration! > 0) {
-      this.gameState.speedBoostDuration! -= deltaTime;
-      if (this.gameState.speedBoostDuration! <= 0) {
+    if (this.gameState.speedBoostActive && this.gameState.speedBoostDuration > 0) {
+      this.gameState.speedBoostDuration -= deltaTime;
+      if (this.gameState.speedBoostDuration <= 0) {
         this.deactivateSpeedBoost();
       }
     }
   }
   
   activateSpeedBoost(): boolean {
-    if (this.gameState.speedBoostCooldown! > 0 || this.gameState.speedBoostActive) {
+    if (this.gameState.speedBoostCooldown > 0 || this.gameState.speedBoostActive) {
       return false; // Still on cooldown or already active
     }
     
@@ -432,26 +457,37 @@ export class GameCore {
     this.gameState.speedBoostDuration = SPEED_BOOST_DURATION;
     this.gameState.speedBoostCooldown = SPEED_BOOST_COOLDOWN;
     
-    // Apply speed boost to tower
+    // Apply speed boost to tower using temporary effects
     const originalFireRate = this.tower.stats.fireRate;
-    this.tower.stats.fireRate *= SPEED_BOOST_MULTIPLIER;
+    const boostedFireRate = originalFireRate * SPEED_BOOST_MULTIPLIER;
+    this.tower.stats.fireRate = boostedFireRate;
     
-    // Store original fire rate to restore later
-    (this as { _originalFireRate?: number })._originalFireRate = originalFireRate;
+    this.temporaryEffects.startEffect(
+      'speedBoost',
+      originalFireRate,
+      boostedFireRate,
+      SPEED_BOOST_DURATION,
+      () => {
+        // Restore original fire rate when effect expires
+        this.tower.stats.fireRate = originalFireRate;
+        this.gameState.speedBoostActive = false;
+        this.gameState.speedBoostDuration = 0;
+      }
+    );
     
     return true;
   }
   
   private deactivateSpeedBoost(): void {
+    // End the effect early
+    const originalFireRate = this.temporaryEffects.getOriginalValue('speedBoost');
+    if (originalFireRate !== undefined) {
+      this.tower.stats.fireRate = originalFireRate;
+    }
+    
     this.gameState.speedBoostActive = false;
     this.gameState.speedBoostDuration = 0;
-    
-    // Restore original fire rate
-    const self = this as { _originalFireRate?: number };
-    if (self._originalFireRate) {
-      this.tower.stats.fireRate = self._originalFireRate;
-      delete self._originalFireRate;
-    }
+    this.temporaryEffects.endEffect('speedBoost');
   }
   
   // Kill streak methods
@@ -465,42 +501,46 @@ export class GameCore {
   }
   
   private updateKillStreakTimer(deltaTime: number): void {
-    if (this.gameState.killStreakTimer! > 0) {
-      this.gameState.killStreakTimer! -= deltaTime;
-      if (this.gameState.killStreakTimer! <= 0) {
+    if (this.gameState.killStreakTimer > 0) {
+      this.gameState.killStreakTimer -= deltaTime;
+      if (this.gameState.killStreakTimer <= 0) {
         this.gameState.killStreak = 0;
-      }
-    }
-    
-    const self = this as { _killStreakTimer?: number };
-    if (this.gameState.killStreakActive && self._killStreakTimer && self._killStreakTimer > 0) {
-      self._killStreakTimer -= deltaTime;
-      if (self._killStreakTimer <= 0) {
-        this.deactivateKillStreak();
       }
     }
   }
   
   private activateKillStreak(): void {
     this.gameState.killStreakActive = true;
-    (this as { _killStreakTimer?: number })._killStreakTimer = KILL_STREAK_DURATION;
     
-    // Apply damage bonus
+    // Apply damage bonus using temporary effects
     const originalDamage = this.tower.stats.damage;
-    this.tower.stats.damage *= KILL_STREAK_DAMAGE_BONUS;
-    (this as { _originalDamage?: number })._originalDamage = originalDamage;
+    const boostedDamage = originalDamage * KILL_STREAK_DAMAGE_BONUS;
+    this.tower.stats.damage = boostedDamage;
+    
+    this.temporaryEffects.startEffect(
+      'killStreak',
+      originalDamage,
+      boostedDamage,
+      KILL_STREAK_DURATION,
+      () => {
+        // Restore original damage when effect expires
+        this.tower.stats.damage = originalDamage;
+        this.gameState.killStreakActive = false;
+        this.gameState.killStreak = 0;
+      }
+    );
   }
   
   private deactivateKillStreak(): void {
+    // End the effect early
+    const originalDamage = this.temporaryEffects.getOriginalValue('killStreak');
+    if (originalDamage !== undefined) {
+      this.tower.stats.damage = originalDamage;
+    }
+    
     this.gameState.killStreakActive = false;
     this.gameState.killStreak = 0;
-    
-    // Restore original damage
-    const self = this as { _originalDamage?: number };
-    if (self._originalDamage) {
-      this.tower.stats.damage = self._originalDamage;
-      delete self._originalDamage;
-    }
+    this.temporaryEffects.endEffect('killStreak');
   }
   
   private applyInterest(deltaTime: number): void {
@@ -531,6 +571,11 @@ export class GameCore {
     }
     if (this.eventHandlers.projectileSpawned) {
       gameEvents.off(GameEvents.ProjectileSpawned, this.eventHandlers.projectileSpawned);
+    }
+    
+    // Clear temporary effects
+    if (this.temporaryEffects) {
+      this.temporaryEffects.clear();
     }
     
     if (this.waveSystem) {

@@ -1,4 +1,6 @@
 import { GameState, TowerStats, UpgradeLevel, MiniUpgradeLevel, MiniUpgradeType } from '../types';
+import { calculateUpgradeCost, applyUpgradeMultiplier } from '../utils/upgrades';
+import { UPGRADE_VALUES, MINI_UPGRADE_VALUES, UPGRADE_SCALING } from '../core/constants';
 
 export class UpgradeSystem {
   private gameState: GameState;
@@ -36,13 +38,13 @@ export class UpgradeSystem {
   };
   
   private costScaling = {
-    damage: 1.5,
-    fireRate: 1.5,
-    maxHealth: 1.5,
-    healthRegen: 2,
-    range: 1.5,
-    goldPerRound: 1.6,  // Reduced from 1.8
-    interest: 1.8       // Reduced from 2.0
+    damage: UPGRADE_SCALING.DEFAULT,
+    fireRate: UPGRADE_SCALING.DEFAULT,
+    maxHealth: UPGRADE_SCALING.DEFAULT,
+    healthRegen: UPGRADE_SCALING.VERY_EXPENSIVE,
+    range: UPGRADE_SCALING.DEFAULT,
+    goldPerRound: 1.6,  // Slightly higher than default
+    interest: UPGRADE_SCALING.EXPENSIVE
   };
   
   constructor(gameState: GameState, baseTowerStats: TowerStats) {
@@ -55,7 +57,7 @@ export class UpgradeSystem {
     const baseCost = this.baseCosts[type];
     const scaling = this.costScaling[type];
     
-    return Math.floor(baseCost * Math.pow(scaling, level));
+    return calculateUpgradeCost(baseCost, level, scaling);
   }
   
   canAffordUpgrade(type: keyof UpgradeLevel): boolean {
@@ -81,8 +83,8 @@ export class UpgradeSystem {
         // Fire rate increase handled in getCurrentTowerStats
         break;
       case 'maxHealth':
-        this.gameState.maxHealth += 20;
-        this.gameState.health += 20;
+        this.gameState.maxHealth += UPGRADE_VALUES.HEALTH;
+        this.gameState.health += UPGRADE_VALUES.HEALTH;
         break;
       case 'healthRegen':
         // Health regen handled in game update loop
@@ -102,7 +104,7 @@ export class UpgradeSystem {
   }
   
   getHealthRegenRate(): number {
-    return this.upgradeLevels.healthRegen;
+    return this.upgradeLevels.healthRegen * UPGRADE_VALUES.HEALTH_REGEN;
   }
   
   getUpgradeLevels(): UpgradeLevel {
@@ -114,7 +116,7 @@ export class UpgradeSystem {
     const level = this.miniUpgradeLevels[type];
     const baseCost = this.miniUpgradeCosts[type];
     // Mini upgrades scale more gently
-    return Math.floor(baseCost * Math.pow(1.3, level));
+    return calculateUpgradeCost(baseCost, level, UPGRADE_SCALING.MINI);
   }
   
   canAffordMiniUpgrade(type: MiniUpgradeType): boolean {
@@ -161,14 +163,14 @@ export class UpgradeSystem {
     // Calculate current stats based on base stats and upgrades
     const stats = { ...this.baseTowerStats };
     
-    // Apply regular upgrades
-    stats.damage += this.upgradeLevels.damage * 5;
-    stats.fireRate += this.upgradeLevels.fireRate * 0.5;
-    stats.range += this.upgradeLevels.range * 25;
+    // Apply regular upgrades using utility functions
+    stats.damage = applyUpgradeMultiplier(stats.damage, this.upgradeLevels.damage, UPGRADE_VALUES.DAMAGE);
+    stats.fireRate = applyUpgradeMultiplier(stats.fireRate, this.upgradeLevels.fireRate, UPGRADE_VALUES.FIRE_RATE);
+    stats.range = applyUpgradeMultiplier(stats.range, this.upgradeLevels.range, UPGRADE_VALUES.RANGE);
     
     // Apply mini-upgrades
-    stats.damage += this.miniUpgradeLevels.sharpAmmo * 2;
-    stats.fireRate += this.miniUpgradeLevels.quickShot * 0.2;
+    stats.damage = applyUpgradeMultiplier(stats.damage, this.miniUpgradeLevels.sharpAmmo, MINI_UPGRADE_VALUES.SHARP_AMMO);
+    stats.fireRate = applyUpgradeMultiplier(stats.fireRate, this.miniUpgradeLevels.quickShot, MINI_UPGRADE_VALUES.QUICK_SHOT);
     
     return stats;
   }

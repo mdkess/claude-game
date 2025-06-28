@@ -67,6 +67,24 @@ export const UPGRADE_VALUES = {
   FIRE_RATE: 0.5,
   HEALTH: 20,
   RANGE: 25,
+  HEALTH_REGEN: 1,
+  GOLD_PER_ROUND: 15,
+  INTEREST_RATE: 0.02,
+} as const;
+
+// Mini-upgrade values
+export const MINI_UPGRADE_VALUES = {
+  SHARP_AMMO: 2,
+  QUICK_SHOT: 0.2,
+  BANDAGES: 0.5,
+} as const;
+
+// Upgrade cost scaling
+export const UPGRADE_SCALING = {
+  DEFAULT: 1.5,
+  EXPENSIVE: 1.8,
+  VERY_EXPENSIVE: 2.0,
+  MINI: 1.3,
 } as const;
 
 // Health and Combat

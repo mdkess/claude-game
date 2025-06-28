@@ -2,94 +2,85 @@ import * as PIXI from 'pixi.js';
 import { Projectile } from '../entities/Projectile';
 import { COLORS } from '../core/constants';
 import { EffectsManager } from '../effects/EffectsManager';
+import { BaseRenderer } from './BaseRenderer';
 
 /**
  * Handles rendering of Projectile entities using PIXI
  */
-export class ProjectileRenderer {
-  private container: PIXI.Container;
-  private sprites: Map<Projectile, PIXI.Container> = new Map();
+export class ProjectileRenderer extends BaseRenderer<Projectile> {
   private lastPositions: Map<Projectile, { x: number; y: number }> = new Map();
+  private effectsManager?: EffectsManager;
   
-  constructor(container: PIXI.Container) {
-    this.container = container;
+  setEffectsManager(effectsManager: EffectsManager): void {
+    this.effectsManager = effectsManager;
   }
   
   /**
    * Create or update the visual representation of a projectile
    */
   render(projectile: Projectile, effectsManager?: EffectsManager): void {
-    let sprite = this.sprites.get(projectile);
-    
-    // Create sprite if it doesn't exist
-    if (!sprite) {
-      sprite = this.createSprite();
-      this.sprites.set(projectile, sprite);
-      this.container.addChild(sprite);
-      this.lastPositions.set(projectile, { x: projectile.x, y: projectile.y });
+    // Update effects manager if provided
+    if (effectsManager) {
+      this.effectsManager = effectsManager;
     }
     
-    // Create trail effect if moved
+    // Use base class update
+    this.update(projectile);
+    
+    // Update trail effect
     const lastPos = this.lastPositions.get(projectile);
-    if (effectsManager && lastPos && (Math.abs(lastPos.x - projectile.x) > 2 || Math.abs(lastPos.y - projectile.y) > 2)) {
-      effectsManager.updateProjectileTrail(projectile.id || Date.now(), projectile.x, projectile.y);
+    if (this.effectsManager && lastPos && 
+        (Math.abs(lastPos.x - projectile.x) > 2 || Math.abs(lastPos.y - projectile.y) > 2)) {
+      this.effectsManager.updateProjectileTrail(projectile.id || Date.now(), projectile.x, projectile.y);
     }
     
-    // Update position
+    this.lastPositions.set(projectile, { x: projectile.x, y: projectile.y });
+  }
+  
+  /**
+   * Implementation of abstract method from BaseRenderer
+   */
+  protected updateSprite(projectile: Projectile, sprite: PIXI.Container): void {
     sprite.x = projectile.x;
     sprite.y = projectile.y;
-    this.lastPositions.set(projectile, { x: projectile.x, y: projectile.y });
-    
-    // Hide if destroyed
     sprite.visible = !projectile.isDestroyed;
+    
+    // Initialize last position if needed
+    if (!this.lastPositions.has(projectile)) {
+      this.lastPositions.set(projectile, { x: projectile.x, y: projectile.y });
+    }
   }
   
   /**
-   * Remove the visual representation of a projectile
+   * Override remove to clean up trail effects
    */
   remove(projectile: Projectile, effectsManager?: EffectsManager): void {
-    const sprite = this.sprites.get(projectile);
-    if (sprite) {
-      this.container.removeChild(sprite);
-      sprite.destroy();
-      this.sprites.delete(projectile);
-      this.lastPositions.delete(projectile);
-      
-      // Clean up trail effect
-      if (effectsManager) {
-        effectsManager.cleanupProjectile(projectile.id || Date.now());
-      }
+    // Update effects manager if provided
+    if (effectsManager) {
+      this.effectsManager = effectsManager;
     }
+    
+    // Clean up trail effect
+    if (this.effectsManager) {
+      this.effectsManager.cleanupProjectile(projectile.id || Date.now());
+    }
+    
+    // Clean up last position
+    this.lastPositions.delete(projectile);
+    
+    // Call base class remove
+    super.remove(projectile);
   }
   
   /**
-   * Clean up sprites for projectiles that are no longer active
-   */
-  cleanupInactive(activeProjectiles: Projectile[]): void {
-    const activeSet = new Set(activeProjectiles);
-    const toRemove: Projectile[] = [];
-    
-    for (const [projectile, _] of this.sprites) {
-      if (!activeSet.has(projectile)) {
-        toRemove.push(projectile);
-      }
-    }
-    
-    toRemove.forEach(projectile => this.remove(projectile));
-  }
-  
-  /**
-   * Clear all projectile sprites
+   * Override clear to clean up last positions
    */
   clear(): void {
-    for (const [_, sprite] of this.sprites) {
-      this.container.removeChild(sprite);
-      sprite.destroy();
-    }
-    this.sprites.clear();
+    this.lastPositions.clear();
+    super.clear();
   }
   
-  private createSprite(): PIXI.Container {
+  protected createSprite(): PIXI.Container {
     const sprite = new PIXI.Container();
     const graphics = new PIXI.Graphics();
     

@@ -3,32 +3,45 @@ import { Enemy } from '../entities/Enemy';
 import { COLORS, ENEMY_HEALTH_BAR } from '../core/constants';
 import { drawPolygon } from '../utils/drawing';
 import { enemyDefinitions } from '../enemies/definitions/EnemyDefinitions';
+import { BaseRenderer } from './BaseRenderer';
+
+interface AnimatedSprite extends PIXI.Container {
+  outerGlow?: PIXI.Graphics;
+  glowContainer?: PIXI.Container;
+  mainContainer?: PIXI.Container;
+  pulseTime?: number;
+  healthBar?: PIXI.Graphics;
+  healthBarBg?: PIXI.Graphics;
+}
 
 /**
  * Handles rendering of Enemy entities using PIXI
  */
-export class EnemyRenderer {
-  private container: PIXI.Container;
-  private sprites: Map<Enemy, PIXI.Container> = new Map();
+export class EnemyRenderer extends BaseRenderer<Enemy, AnimatedSprite> {
   private flashStates: Map<Enemy, { endTime: number }> = new Map();
-  
-  constructor(container: PIXI.Container) {
-    this.container = container;
-  }
   
   /**
    * Create or update the visual representation of an enemy
    */
   render(enemy: Enemy, deltaTime: number = 0.016): void {
-    let sprite = this.sprites.get(enemy);
+    // Use base class update method
+    this.update(enemy);
     
-    // Create sprite if it doesn't exist
-    if (!sprite) {
-      sprite = this.createSprite(enemy);
-      this.sprites.set(enemy, sprite);
-      this.container.addChild(sprite);
+    // Get sprite for additional updates
+    const sprite = this.sprites.get(enemy);
+    if (sprite) {
+      // Update animations
+      this.updateAnimations(sprite, enemy, deltaTime);
+      
+      // Update flash effect
+      // this.updateFlashEffect(sprite, enemy);
     }
-    
+  }
+  
+  /**
+   * Implementation of abstract method from BaseRenderer
+   */
+  protected updateSprite(enemy: Enemy, sprite: AnimatedSprite): void {
     // Update position
     sprite.x = enemy.x;
     sprite.y = enemy.y;
@@ -36,23 +49,11 @@ export class EnemyRenderer {
     // Update visibility
     sprite.visible = enemy.isActive && !enemy.isDead;
     
-    // Update animations
-    this.updateAnimations(sprite, enemy, deltaTime);
-    
     // Update health bar
     this.updateHealthBar(sprite, enemy);
-    
-    // Update flash effect
-    // this.updateFlashEffect(sprite, enemy);
   }
   
-  private updateAnimations(sprite: PIXI.Container, enemy: Enemy, deltaTime: number): void {
-    interface AnimatedSprite extends PIXI.Container {
-      outerGlow?: PIXI.Graphics;
-      glowContainer?: PIXI.Container;
-      mainContainer?: PIXI.Container;
-      pulseTime?: number;
-    }
+  private updateAnimations(sprite: AnimatedSprite, enemy: Enemy, deltaTime: number): void {
     
     const animatedSprite = sprite as AnimatedSprite;
     if (!animatedSprite.outerGlow || !animatedSprite.mainContainer || animatedSprite.pulseTime === undefined) return;
@@ -86,49 +87,23 @@ export class EnemyRenderer {
   }
   
   /**
-   * Remove the visual representation of an enemy
+   * Override remove to also clean up flash states
    */
   remove(enemy: Enemy): void {
-    const sprite = this.sprites.get(enemy);
-    if (sprite) {
-      this.container.removeChild(sprite);
-      sprite.destroy();
-      this.sprites.delete(enemy);
-    }
+    super.remove(enemy);
+    this.flashStates.delete(enemy);
   }
   
   /**
-   * Clear all enemy sprites
+   * Override clear to also clean up flash states
    */
   clear(): void {
-    for (const [_, sprite] of this.sprites) {
-      this.container.removeChild(sprite);
-      sprite.destroy();
-    }
-    this.sprites.clear();
+    super.clear();
     this.flashStates.clear();
   }
   
-  /**
-   * Clean up sprites for enemies that are no longer in the active list
-   */
-  cleanupInactive(activeEnemies: Enemy[]): void {
-    const activeSet = new Set(activeEnemies);
-    
-    // Find enemies that have sprites but are not in the active list
-    const toRemove: Enemy[] = [];
-    for (const [enemy, _] of this.sprites) {
-      if (!activeSet.has(enemy)) {
-        toRemove.push(enemy);
-      }
-    }
-    
-    // Remove their sprites
-    toRemove.forEach(enemy => this.remove(enemy));
-  }
-  
-  private createSprite(enemy: Enemy): PIXI.Container {
-    const sprite = new PIXI.Container();
+  protected createSprite(enemy: Enemy): AnimatedSprite {
+    const sprite = new PIXI.Container() as AnimatedSprite;
     
     // Get visual config from enemy definitions
     const definition = enemyDefinitions.get(enemy.type);
@@ -207,25 +182,21 @@ export class EnemyRenderer {
     mainContainer.addChild(coreGraphics);
     
     // Store references for animation
-    interface AnimatedSprite extends PIXI.Container {
-      outerGlow?: PIXI.Graphics;
-      glowContainer?: PIXI.Container;
-      mainContainer?: PIXI.Container;
-      pulseTime?: number;
-    }
-    
-    const animatedSprite = sprite as AnimatedSprite;
-    animatedSprite.outerGlow = outerGlow;
-    animatedSprite.glowContainer = glowContainer;
-    animatedSprite.mainContainer = mainContainer;
-    animatedSprite.pulseTime = Math.random() * Math.PI * 2; // Random start phase
+    sprite.outerGlow = outerGlow;
+    sprite.glowContainer = glowContainer;
+    sprite.mainContainer = mainContainer;
+    sprite.pulseTime = Math.random() * Math.PI * 2; // Random start phase
     
     sprite.addChild(glowContainer);
     sprite.addChild(mainContainer);
     
     // Create health bar
-    const healthBar = this.createHealthBar();
-    sprite.addChild(healthBar);
+    const healthBarContainer = this.createHealthBar();
+    sprite.addChild(healthBarContainer);
+    
+    // Store health bar references
+    sprite.healthBarBg = healthBarContainer.children[0] as PIXI.Graphics;
+    sprite.healthBar = healthBarContainer.children[1] as PIXI.Graphics;
     
     return sprite;
   }
@@ -268,34 +239,34 @@ export class EnemyRenderer {
     return healthBarContainer;
   }
   
-  private updateHealthBar(sprite: PIXI.Container, enemy: Enemy): void {
-    // Find the health bar container (should be the last child)
-    const healthBar = sprite.children[sprite.children.length - 1] as PIXI.Container;
-    if (!healthBar || healthBar.children.length < 2) return;
+  private updateHealthBar(sprite: AnimatedSprite, enemy: Enemy): void {
+    if (!sprite.healthBar || !sprite.healthBarBg) return;
     
-    const fgGraphics = healthBar.children[1] as PIXI.Graphics;
-    fgGraphics.clear();
+    const healthBar = sprite.healthBar;
+    const healthBarContainer = healthBar.parent;
+    
+    healthBar.clear();
     
     const healthPercent = enemy.getHealthPercentage();
     if (healthPercent < 1) {
       // Show health bar only when damaged
-      healthBar.visible = true;
+      healthBarContainer.visible = true;
       
       const width = ENEMY_HEALTH_BAR.WIDTH * healthPercent;
       const color = healthPercent > 0.5 ? COLORS.HEALTH_HIGH : 
                    healthPercent > 0.25 ? COLORS.HEALTH_MEDIUM : 
                    COLORS.HEALTH_LOW;
       
-      fgGraphics.rect(
+      healthBar.rect(
         -ENEMY_HEALTH_BAR.WIDTH / 2,
         -ENEMY_HEALTH_BAR.HEIGHT / 2,
         width,
         ENEMY_HEALTH_BAR.HEIGHT
       );
-      fgGraphics.fill({ color, alpha: 1 });
+      healthBar.fill({ color, alpha: 1 });
     } else {
       // Hide health bar when at full health
-      healthBar.visible = false;
+      healthBarContainer.visible = false;
     }
   }
   

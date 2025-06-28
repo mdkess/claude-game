@@ -1,48 +1,16 @@
-export interface GameState {
-  health: number;
-  maxHealth: number;
-  gold: number;
-  score: number;
-  wave: number;
-  survivalTime: number;
-  isPaused: boolean;
-  isGameOver: boolean;
-  enemyCount?: number;
-  towerStats?: TowerStats;
-  healthRegen?: number;
-  upgradeLevels?: UpgradeLevel;
-  speedMultiplier?: number;
-  // Ability states
-  speedBoostActive?: boolean;
-  speedBoostCooldown?: number;
-  speedBoostDuration?: number;
-  // Wave tracking
-  waveStartHealth?: number;
-  perfectWaveStreak?: number;
-  // Kill streak tracking
-  killStreak?: number;
-  killStreakTimer?: number;
-  killStreakActive?: boolean;
-  // Economic tracking
-  goldPerRound?: number;
-  interestRate?: number;
-  lastInterestTime?: number;
-  waveState?: {
-    currentWave: number;
-    isWaveActive: boolean;
-    enemiesRemaining: Record<string, number>;
-    totalEnemiesRemaining: number;
-    nextWaveTimer: number;
-    composition: {
-      enemies: Array<{
-        type: string;
-        count: number;
-        displayName: string;
-        icon: string;
-      }>;
-    };
-  };
-}
+// Re-export GameState and related types from the new file
+export type { 
+  GameState, 
+  CoreGameState, 
+  TowerState, 
+  AbilityState, 
+  KillStreakState, 
+  WaveTrackingState, 
+  EconomicState,
+  hasAbilityState,
+  hasKillStreakState,
+  hasEconomicState
+} from './gameState';
 
 export interface TowerStats {
   damage: number;
