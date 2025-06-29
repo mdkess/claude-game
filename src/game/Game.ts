@@ -217,6 +217,15 @@ export class Game extends GameCore {
     return this.effectsManager;
   }
   
+  // Override to add visual feedback for permanent upgrades
+  applyPermanentUpgrade(type: keyof PermanentUpgrades, newUpgrades: PermanentUpgrades): void {
+    super.applyPermanentUpgrade(type, newUpgrades);
+    
+    // Add visual feedback
+    const tower = this.getTower();
+    this.effectsManager.onTowerUpgrade(tower.x, tower.y);
+  }
+  
   // Override GameCore event handlers to trigger visual effects
   protected onEnemyKilled(data: EnemyKilledEvent, goldEarned: number): void {
     super.onEnemyKilled(data, goldEarned);

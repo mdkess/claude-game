@@ -424,6 +424,54 @@ export class GameCore {
     return success;
   }
   
+  applyPermanentUpgrade(type: keyof PermanentUpgrades, newUpgrades: PermanentUpgrades): void {
+    const oldUpgrades = this.permanentUpgrades;
+    this.permanentUpgrades = newUpgrades;
+    
+    switch (type) {
+      case 'startingDamage':
+        // Apply damage increase (+5 per level)
+        const damageIncrease = (newUpgrades.startingDamage - oldUpgrades.startingDamage) * 5;
+        this.tower.stats.damage += damageIncrease;
+        this.gameState.towerStats.damage += damageIncrease;
+        break;
+        
+      case 'startingFireRate':
+        // Apply fire rate increase (+0.5 per level)
+        const fireRateIncrease = (newUpgrades.startingFireRate - oldUpgrades.startingFireRate) * 0.5;
+        this.tower.stats.fireRate += fireRateIncrease;
+        this.gameState.towerStats.fireRate += fireRateIncrease;
+        break;
+        
+      case 'startingHealth':
+        // Apply health increase (+25 per level)
+        const healthIncrease = (newUpgrades.startingHealth - oldUpgrades.startingHealth) * 25;
+        this.gameState.maxHealth += healthIncrease;
+        this.gameState.health += healthIncrease; // Also heal the current health
+        break;
+        
+      case 'goldMultiplier':
+        // Gold multiplier is applied when enemies are killed, no immediate effect needed
+        break;
+        
+      case 'essenceGain':
+        // Essence gain is applied on game over, no immediate effect needed
+        break;
+        
+      case 'multiShot':
+        // Update the tower's multi-shot count
+        this.tower.stats.multiShotCount = newUpgrades.multiShot;
+        this.gameState.towerStats.multiShotCount = newUpgrades.multiShot;
+        break;
+        
+      case 'bounce':
+        // Update the tower's bounce count
+        this.tower.stats.bounceCount = newUpgrades.bounce;
+        this.gameState.towerStats.bounceCount = newUpgrades.bounce;
+        break;
+    }
+  }
+  
   isGameOver(): boolean {
     return this.gameState.isGameOver;
   }

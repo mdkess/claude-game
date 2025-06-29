@@ -217,6 +217,11 @@ export function GameCanvas() {
     }
     setPermanentUpgrades(newUpgrades);
     localStorage.setItem("permanentUpgrades", JSON.stringify(newUpgrades));
+    
+    // Apply the upgrade to the current game immediately
+    if (gameRef.current) {
+      gameRef.current.applyPermanentUpgrade(type, newUpgrades);
+    }
   };
 
   // Load saved data on mount
