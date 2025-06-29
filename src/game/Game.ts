@@ -187,6 +187,11 @@ export class Game extends GameCore {
     this.gameContainer.scale.set(scale);
     this.gameContainer.x = (width - gameSize) / 2;
     this.gameContainer.y = (height - gameSize) / 2;
+    
+    // Update effects manager with new base position
+    if (this.effectsManager) {
+      this.effectsManager.updateBasePosition(this.gameContainer.x, this.gameContainer.y);
+    }
   }
   
   debugDamage(amount: number) {

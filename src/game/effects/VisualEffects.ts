@@ -16,9 +16,19 @@ export class VisualEffects {
   private container: PIXI.Container;
   private particles: Particle[] = [];
   private shockwaves: PIXI.Graphics[] = [];
+  private basePosition = { x: 0, y: 0 };
+  private currentShakeTween: gsap.core.Tween | null = null;
   
   constructor(container: PIXI.Container) {
     this.container = container;
+  }
+  
+  /**
+   * Update the base position for screen shake (call after resize)
+   */
+  updateBasePosition(x: number, y: number) {
+    this.basePosition.x = x;
+    this.basePosition.y = y;
   }
   
   /**
@@ -288,21 +298,45 @@ export class VisualEffects {
    * Create screen shake effect
    */
   createScreenShake(intensity: number = 5, duration: number = 0.3) {
-    const originalX = this.container.parent.x;
-    const originalY = this.container.parent.y;
+    const parent = this.container.parent;
+    if (!parent) return;
     
-    gsap.to(this.container.parent, {
-      x: originalX,
-      y: originalY,
+    // If this is the first shake or position has changed, capture base position
+    if (!this.currentShakeTween || this.basePosition.x !== parent.x || this.basePosition.y !== parent.y) {
+      // Only update base position if we're not currently shaking
+      if (!this.currentShakeTween) {
+        this.basePosition.x = parent.x;
+        this.basePosition.y = parent.y;
+      }
+    }
+    
+    // Kill any existing shake animation
+    if (this.currentShakeTween) {
+      this.currentShakeTween.kill();
+      this.currentShakeTween = null;
+    }
+    
+    // Create shake data object to track the animation
+    const shakeData = {
+      intensity: intensity,
+      progress: 0
+    };
+    
+    this.currentShakeTween = gsap.to(shakeData, {
+      progress: 1,
       duration: duration,
-      ease: "elastic.out(1, 0.5)",
-      onUpdate: function() {
-        this.targets()[0].x = originalX + (Math.random() - 0.5) * intensity;
-        this.targets()[0].y = originalY + (Math.random() - 0.5) * intensity;
+      ease: "power2.out",
+      onUpdate: () => {
+        // Reduce intensity as animation progresses
+        const currentIntensity = shakeData.intensity * (1 - shakeData.progress);
+        parent.x = this.basePosition.x + (Math.random() - 0.5) * currentIntensity;
+        parent.y = this.basePosition.y + (Math.random() - 0.5) * currentIntensity;
       },
       onComplete: () => {
-        this.container.parent.x = originalX;
-        this.container.parent.y = originalY;
+        // Ensure we return to exact base position
+        parent.x = this.basePosition.x;
+        parent.y = this.basePosition.y;
+        this.currentShakeTween = null;
       }
     });
   }

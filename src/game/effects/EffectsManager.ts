@@ -129,6 +129,10 @@ export class EffectsManager {
     this.visualEffects.createScreenShake(intensity, duration);
   }
   
+  updateBasePosition(x: number, y: number) {
+    this.visualEffects.updateBasePosition(x, y);
+  }
+  
   // Update
   update(deltaTime: number) {
     this.visualEffects.update(deltaTime);
