@@ -306,10 +306,11 @@ export class GameCore {
     });
     this.projectiles = activeProjectiles;
     
-    // Only log if we actually found duplicates (keep this for debugging edge cases)
-    if (duplicateIds.size > 0) {
-      console.warn(`[GameCore] Removed ${duplicateIds.size} duplicate projectiles`);
-    }
+    // Silently handle duplicates - this is a defensive check that works correctly
+    // Only log in development if needed for debugging
+    // if (duplicateIds.size > 0 && process.env.NODE_ENV === 'development') {
+    //   console.warn(`[GameCore] Removed ${duplicateIds.size} duplicate projectiles`);
+    // }
     
     // Update game state from wave system
     this.gameState.wave = this.waveSystem.getCurrentWave();

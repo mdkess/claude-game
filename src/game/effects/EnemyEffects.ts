@@ -34,14 +34,19 @@ export class EnemyEffects {
     gsap.to(text, {
       y: y - 40,
       alpha: 0,
-      scaleX: isCritical ? 1.5 : 1.2,
-      scaleY: isCritical ? 1.5 : 1.2,
       duration: 0.8,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(text);
         text.destroy();
       }
+    });
+    
+    gsap.to(text.scale, {
+      x: isCritical ? 1.5 : 1.2,
+      y: isCritical ? 1.5 : 1.2,
+      duration: 0.8,
+      ease: "power2.out"
     });
     
     if (isCritical) {
@@ -75,14 +80,19 @@ export class EnemyEffects {
         x: x + vx * 20,
         y: y + vy * 20 + 10, // Gravity effect
         alpha: 0,
-        scaleX: 0.5,
-        scaleY: 0.5,
         duration: 0.6,
         ease: "power2.out",
         onComplete: () => {
           this.container.removeChild(particle);
           particle.destroy();
         }
+      });
+      
+      gsap.to(particle.scale, {
+        x: 0.5,
+        y: 0.5,
+        duration: 0.6,
+        ease: "power2.out"
       });
     }
     
@@ -96,14 +106,19 @@ export class EnemyEffects {
     
     gsap.to(flash, {
       alpha: 0,
-      scaleX: 2,
-      scaleY: 2,
       duration: 0.2,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(flash);
         flash.destroy();
       }
+    });
+    
+    gsap.to(flash.scale, {
+      x: 2,
+      y: 2,
+      duration: 0.2,
+      ease: "power2.out"
     });
   }
   
@@ -121,14 +136,19 @@ export class EnemyEffects {
     
     gsap.to(explosion, {
       alpha: 0,
-      scaleX: 3,
-      scaleY: 3,
       duration: 0.4,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(explosion);
         explosion.destroy();
       }
+    });
+    
+    gsap.to(explosion.scale, {
+      x: 3,
+      y: 3,
+      duration: 0.4,
+      ease: "power2.out"
     });
     
     // Gibs/chunks
@@ -172,14 +192,19 @@ export class EnemyEffects {
       
       gsap.to(burst, {
         alpha: 0,
-        scaleX: 5 * size,
-        scaleY: 5 * size,
         duration: 0.5,
         ease: "power2.out",
         onComplete: () => {
           this.container.removeChild(burst);
           burst.destroy();
         }
+      });
+      
+      gsap.to(burst.scale, {
+        x: 5 * size,
+        y: 5 * size,
+        duration: 0.5,
+        ease: "power2.out"
       });
     }
   }
@@ -198,14 +223,23 @@ export class EnemyEffects {
     
     gsap.fromTo(portal, 
       {
-        alpha: 0,
-        scaleX: 0,
-        scaleY: 0
+        alpha: 0
       },
       {
         alpha: 1,
-        scaleX: 4,
-        scaleY: 4,
+        duration: 0.3,
+        ease: "back.out(1.7)"
+      }
+    );
+    
+    gsap.fromTo(portal.scale,
+      {
+        x: 0,
+        y: 0
+      },
+      {
+        x: 4,
+        y: 4,
         duration: 0.3,
         ease: "back.out(1.7)"
       }
@@ -273,14 +307,19 @@ export class EnemyEffects {
     
     gsap.to(ripple, {
       alpha: 0,
-      scaleX: 2,
-      scaleY: 2,
       duration: 0.3,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(ripple);
         ripple.destroy();
       }
+    });
+    
+    gsap.to(ripple.scale, {
+      x: 2,
+      y: 2,
+      duration: 0.3,
+      ease: "power2.out"
     });
     
     // Hexagonal pattern
@@ -306,8 +345,6 @@ export class EnemyEffects {
     
     gsap.to(hex, {
       alpha: 0,
-      scaleX: 1.5,
-      scaleY: 1.5,
       rotation: Math.PI / 6,
       duration: 0.4,
       ease: "power2.out",
@@ -315,6 +352,13 @@ export class EnemyEffects {
         this.container.removeChild(hex);
         hex.destroy();
       }
+    });
+    
+    gsap.to(hex.scale, {
+      x: 1.5,
+      y: 1.5,
+      duration: 0.4,
+      ease: "power2.out"
     });
   }
   

@@ -39,8 +39,15 @@ export class ProjectileEffects {
     // Pulsing animation
     gsap.to(outerGlow, {
       alpha: 0.1,
-      scaleX: 1.2,
-      scaleY: 1.2,
+      duration: 0.3,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+    
+    gsap.to(outerGlow.scale, {
+      x: 1.2,
+      y: 1.2,
       duration: 0.3,
       repeat: -1,
       yoyo: true,
@@ -49,8 +56,16 @@ export class ProjectileEffects {
     
     gsap.to(middleGlow, {
       alpha: 0.3,
-      scaleX: 1.1,
-      scaleY: 1.1,
+      duration: 0.3,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+      delay: 0.1
+    });
+    
+    gsap.to(middleGlow.scale, {
+      x: 1.1,
+      y: 1.1,
       duration: 0.3,
       repeat: -1,
       yoyo: true,
@@ -80,8 +95,6 @@ export class ProjectileEffects {
     // Fade out trail segment
     gsap.to(trail, {
       alpha: 0,
-      scaleX: 0.2,
-      scaleY: 0.2,
       duration: 0.4,
       ease: "power2.out",
       onComplete: () => {
@@ -95,6 +108,13 @@ export class ProjectileEffects {
           if (index > -1) trails.splice(index, 1);
         }
       }
+    });
+    
+    gsap.to(trail.scale, {
+      x: 0.2,
+      y: 0.2,
+      duration: 0.4,
+      ease: "power2.out"
     });
   }
   
@@ -111,14 +131,19 @@ export class ProjectileEffects {
     
     gsap.to(burst, {
       alpha: 0,
-      scaleX: 2,
-      scaleY: 2,
       duration: 0.3,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(burst);
         burst.destroy();
       }
+    });
+    
+    gsap.to(burst.scale, {
+      x: 2,
+      y: 2,
+      duration: 0.3,
+      ease: "power2.out"
     });
     
     // Direction indicators
@@ -134,7 +159,6 @@ export class ProjectileEffects {
       
       gsap.to(line, {
         alpha: 0,
-        scaleX: 2,
         duration: 0.4,
         delay: i * 0.05,
         ease: "power2.out",
@@ -142,6 +166,13 @@ export class ProjectileEffects {
           this.container.removeChild(line);
           line.destroy();
         }
+      });
+      
+      gsap.to(line.scale, {
+        x: 2,
+        duration: 0.4,
+        delay: i * 0.05,
+        ease: "power2.out"
       });
     });
   }
@@ -159,14 +190,19 @@ export class ProjectileEffects {
     
     gsap.to(flash, {
       alpha: 0,
-      scaleX: 2,
-      scaleY: 2,
       duration: 0.2,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(flash);
         flash.destroy();
       }
+    });
+    
+    gsap.to(flash.scale, {
+      x: 2,
+      y: 2,
+      duration: 0.2,
+      ease: "power2.out"
     });
     
     // Direction change arc
@@ -179,14 +215,19 @@ export class ProjectileEffects {
     
     gsap.to(arc, {
       alpha: 0,
-      scaleX: 1.5,
-      scaleY: 1.5,
       duration: 0.4,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(arc);
         arc.destroy();
       }
+    });
+    
+    gsap.to(arc.scale, {
+      x: 1.5,
+      y: 1.5,
+      duration: 0.4,
+      ease: "power2.out"
     });
     
     // Spark particles at bounce point
@@ -242,9 +283,16 @@ export class ProjectileEffects {
       
       gsap.to(arc, {
         alpha: 0,
-        scaleX: 1.5,
-        scaleY: 1.5,
         rotation: arc.rotation + Math.PI / 4,
+        duration: 0.2,
+        repeat: -1,
+        yoyo: true,
+        ease: "power2.inOut"
+      });
+      
+      gsap.to(arc.scale, {
+        x: 1.5,
+        y: 1.5,
         duration: 0.2,
         repeat: -1,
         yoyo: true,
@@ -261,8 +309,15 @@ export class ProjectileEffects {
     
     gsap.to(field, {
       alpha: 0.1,
-      scaleX: 1.2,
-      scaleY: 1.2,
+      duration: 0.5,
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut"
+    });
+    
+    gsap.to(field.scale, {
+      x: 1.2,
+      y: 1.2,
       duration: 0.5,
       repeat: -1,
       yoyo: true,

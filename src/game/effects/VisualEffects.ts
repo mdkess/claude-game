@@ -45,14 +45,19 @@ export class VisualEffects {
     
     gsap.to(flash, {
       alpha: 0,
-      width: flash.width * 3,
-      height: flash.height * 3,
       duration: 0.3,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(flash);
         flash.destroy();
       }
+    });
+    
+    gsap.to(flash.scale, {
+      x: 3,
+      y: 3,
+      duration: 0.3,
+      ease: "power2.out"
     });
     
     // Shockwave ring
@@ -99,8 +104,6 @@ export class VisualEffects {
     
     gsap.to(shockwave, {
       alpha: 0,
-      width: shockwave.width * 8,
-      height: shockwave.height * 8,
       duration: 0.6,
       ease: "power2.out",
       onComplete: () => {
@@ -109,6 +112,13 @@ export class VisualEffects {
         this.container.removeChild(shockwave);
         shockwave.destroy();
       }
+    });
+    
+    gsap.to(shockwave.scale, {
+      x: 8,
+      y: 8,
+      duration: 0.6,
+      ease: "power2.out"
     });
   }
   
@@ -127,8 +137,6 @@ export class VisualEffects {
       
       gsap.to(ripple, {
         alpha: 0,
-        width: ripple.width * 6,
-        height: ripple.height * 6,
         duration: 0.4,
         delay: i * 0.1,
         ease: "power2.out",
@@ -136,6 +144,14 @@ export class VisualEffects {
           this.container.removeChild(ripple);
           ripple.destroy();
         }
+      });
+      
+      gsap.to(ripple.scale, {
+        x: 6,
+        y: 6,
+        duration: 0.4,
+        delay: i * 0.1,
+        ease: "power2.out"
       });
     }
   }
@@ -160,14 +176,19 @@ export class VisualEffects {
     
     gsap.to(flash, {
       alpha: 0,
-      scaleX: 1.5,
-      scaleY: 0.5,
       duration: 0.15,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(flash);
         flash.destroy();
       }
+    });
+    
+    gsap.to(flash.scale, {
+      x: 1.5,
+      y: 0.5,
+      duration: 0.15,
+      ease: "power2.out"
     });
     
     // Spark particles
@@ -233,7 +254,6 @@ export class VisualEffects {
     
     gsap.to(spark, {
       alpha: 0,
-      scaleX: 0.2,
       x: x + vx * 20,
       y: y + vy * 20,
       duration: 0.3,
@@ -242,6 +262,12 @@ export class VisualEffects {
         this.container.removeChild(spark);
         spark.destroy();
       }
+    });
+    
+    gsap.to(spark.scale, {
+      x: 0.2,
+      duration: 0.3,
+      ease: "power2.out"
     });
   }
   
@@ -259,14 +285,19 @@ export class VisualEffects {
     gsap.to(smoke, {
       alpha: 0,
       y: y - 30,
-      width: smoke.width * 2,
-      height: smoke.height * 2,
       duration: 1,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(smoke);
         smoke.destroy();
       }
+    });
+    
+    gsap.to(smoke.scale, {
+      x: 2,
+      y: 2,
+      duration: 1,
+      ease: "power2.out"
     });
   }
   
@@ -283,14 +314,19 @@ export class VisualEffects {
     
     gsap.to(trail, {
       alpha: 0,
-      scaleX: 0.2,
-      scaleY: 0.2,
       duration: 0.3,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(trail);
         trail.destroy();
       }
+    });
+    
+    gsap.to(trail.scale, {
+      x: 0.2,
+      y: 0.2,
+      duration: 0.3,
+      ease: "power2.out"
     });
   }
   
@@ -383,14 +419,19 @@ export class VisualEffects {
     gsap.to(burst, {
       alpha: 0,
       rotation: Math.PI,
-      scaleX: 2,
-      scaleY: 2,
       duration: 0.5,
       ease: "power2.out",
       onComplete: () => {
         this.container.removeChild(burst);
         burst.destroy();
       }
+    });
+    
+    gsap.to(burst.scale, {
+      x: 2,
+      y: 2,
+      duration: 0.5,
+      ease: "power2.out"
     });
   }
   
