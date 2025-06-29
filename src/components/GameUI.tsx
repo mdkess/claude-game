@@ -74,6 +74,7 @@ export function GameUI({
               gold={gameState.gold}
               totalEssence={totalEssence}
               score={gameState.score}
+              interestRate={gameState.interestRate}
               speedMultiplier={gameState.speedMultiplier}
               onToggleSpeed={onToggleSpeed}
             />

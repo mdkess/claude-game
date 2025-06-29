@@ -128,7 +128,6 @@ export class GameCore {
       // Economic state
       goldPerRound: 0,
       interestRate: 0,
-      lastInterestTime: 0,
       healthRegen: 0
     };
     
@@ -204,6 +203,14 @@ export class GameCore {
       const goldPerRoundBonus = this.gameState.goldPerRound || 0;
       finalBonusGold += goldPerRoundBonus;
       
+      // Calculate and add interest
+      if (this.gameState.interestRate > 0) {
+        const interestGain = Math.floor(this.gameState.gold * this.gameState.interestRate);
+        if (interestGain > 0) {
+          finalBonusGold += interestGain;
+        }
+      }
+      
       this.gameState.gold += finalBonusGold;
       
       // Reset wave start health for next wave
@@ -252,8 +259,7 @@ export class GameCore {
     // Update kill streak timer
     this.updateKillStreakTimer(adjustedDeltaTime);
     
-    // Apply interest
-    this.applyInterest(adjustedDeltaTime);
+    // Interest is now applied per round, not per second
     
     // Health regeneration
     const regenRate = this.upgradeSystem.getHealthRegenRate();
@@ -543,20 +549,8 @@ export class GameCore {
     this.temporaryEffects.endEffect('killStreak');
   }
   
-  private applyInterest(deltaTime: number): void {
-    if (!this.gameState.interestRate || this.gameState.interestRate <= 0) return;
-    
-    // Apply interest every second
-    this.gameState.lastInterestTime = (this.gameState.lastInterestTime || 0) + deltaTime;
-    
-    if (this.gameState.lastInterestTime >= 1.0) {
-      const interestGain = Math.floor(this.gameState.gold * this.gameState.interestRate);
-      if (interestGain > 0) {
-        this.gameState.gold += interestGain;
-      }
-      this.gameState.lastInterestTime -= 1.0;
-    }
-  }
+  // Interest is now calculated per round in the wave completed handler
+  // This method is no longer needed
   
   destroy() {
     // Remove event listeners

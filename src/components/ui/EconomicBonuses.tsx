@@ -15,7 +15,7 @@ export function EconomicBonuses({ goldPerRound, interestRate }: EconomicBonusesP
           <span className="text-yellow-300 mr-2 sm:mr-3">+{goldPerRound}/wave</span>
         )}
         {interestRate && interestRate > 0 && (
-          <span className="text-green-300">+{(interestRate * 100).toFixed(0)}%/s</span>
+          <span className="text-green-300">+{(interestRate * 100).toFixed(0)}%/rd</span>
         )}
       </div>
     </div>

@@ -71,7 +71,6 @@ export interface WaveTrackingState {
 export interface EconomicState {
   goldPerRound: number;
   interestRate: number;
-  lastInterestTime: number;
   healthRegen: number;
 }
 
@@ -106,5 +105,5 @@ export function hasKillStreakState(state: Partial<GameState>): state is Partial<
 export function hasEconomicState(state: Partial<GameState>): state is Partial<GameState> & EconomicState {
   return state.goldPerRound !== undefined && 
          state.interestRate !== undefined && 
-         state.lastInterestTime !== undefined;
+         state.healthRegen !== undefined;
 }
