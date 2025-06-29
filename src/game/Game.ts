@@ -175,18 +175,24 @@ export class Game extends GameCore {
     // Detect if mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || width < 768;
     
+    // Account for top bar height (approximately 60px on desktop, 50px on mobile)
+    const topBarHeight = isMobile ? 50 : 60;
+    // Account for bottom panel height (approximately 180px on desktop, 150px on mobile)
+    const bottomPanelHeight = isMobile ? 150 : 180;
+    const availableHeight = height - topBarHeight - bottomPanelHeight;
+    
     // Adjust sizing for mobile
     const minSize = isMobile ? 300 : 400;
     const maxSize = isMobile ? 800 : 1200;
     const padding = isMobile ? 0.95 : 0.9;
     
     // Calculate game size to fit screen
-    const gameSize = Math.max(minSize, Math.min(maxSize, Math.min(width * padding, height * padding)));
+    const gameSize = Math.max(minSize, Math.min(maxSize, Math.min(width * padding, availableHeight * padding)));
     const scale = gameSize / GAME_SIZE;
     
     this.gameContainer.scale.set(scale);
     this.gameContainer.x = (width - gameSize) / 2;
-    this.gameContainer.y = (height - gameSize) / 2;
+    this.gameContainer.y = topBarHeight + 10;
     
     // Update effects manager with new base position
     if (this.effectsManager) {

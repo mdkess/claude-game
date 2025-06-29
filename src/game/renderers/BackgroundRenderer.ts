@@ -24,8 +24,8 @@ export class BackgroundRenderer {
   private time: number = 0;
   private currentWave: number = 1;
   private transitionProgress: number = 0;
-  private targetColor: number = 0x001122;
-  private currentColor: number = 0x001122;
+  private targetColor: number = 0x1a1a1a;
+  private currentColor: number = 0x1a1a1a;
   
   // Grid settings
   private readonly GRID_SIZE = 40;
@@ -33,12 +33,12 @@ export class BackgroundRenderer {
   
   // Wave color progression
   private readonly waveColors = [
-    0x001122, // Deep blue (waves 1-5)
-    0x112211, // Dark green (waves 6-10)
-    0x221111, // Dark red (waves 11-15)
-    0x221122, // Purple (waves 16-20)
-    0x222211, // Dark yellow (waves 21-25)
-    0x112222, // Cyan (waves 26+)
+    0x1a1a1a, // Gray (waves 1-5)
+    0x1a2a1a, // Dark green tint (waves 6-10)
+    0x2a1a1a, // Dark red tint (waves 11-15)
+    0x2a1a2a, // Purple tint (waves 16-20)
+    0x2a2a1a, // Dark yellow tint (waves 21-25)
+    0x1a2a2a, // Cyan tint (waves 26+)
   ];
   
   constructor(container: PIXI.Container) {

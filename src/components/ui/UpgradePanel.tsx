@@ -45,7 +45,7 @@ function UpgradeButton({
       onClick={onClick}
       disabled={!canAfford}
       className={`
-        relative px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-md transition-all w-full sm:w-auto sm:min-w-[80px] transform hover:scale-105
+        relative px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-md transition-all w-full sm:w-auto sm:min-w-[80px] transform hover:scale-105
         ${colorClasses[color]}
       `}
     >
@@ -53,7 +53,7 @@ function UpgradeButton({
       <div className="text-[10px] sm:text-xs absolute top-0.5 right-0.5 opacity-70">
         Lv.{level}
       </div>
-      <div className="font-bold mt-2 sm:mt-3 text-xs sm:text-sm">{label}</div>
+      <div className="font-bold mt-1.5 sm:mt-2 text-xs sm:text-sm">{label}</div>
       <div className="text-[10px] sm:text-xs">{cost}g</div>
     </button>
   );
@@ -77,14 +77,14 @@ export function UpgradePanel({ gameState, upgradeCosts, onUpgrade }: UpgradePane
   }, []);
 
   return (
-    <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg relative">
+    <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700 shadow-lg relative overflow-hidden">
       <div 
         ref={scrollRef} 
-        className="p-1.5 sm:p-3 max-h-[160px] sm:max-h-[240px] overflow-y-auto space-y-1 sm:space-y-3 scrollbar-custom relative"
+        className="p-1 sm:p-2 max-h-[120px] sm:max-h-[180px] overflow-y-auto overflow-x-hidden space-y-1 sm:space-y-2 scrollbar-custom relative"
       >
         {/* Offensive Upgrades */}
         <div className="space-y-1 sm:space-y-2">
-          <h3 className="text-red-400 font-bold text-xs sm:text-sm flex items-center gap-1 sticky top-0 bg-gray-900 py-0.5 sm:py-1 -mx-1.5 sm:-mx-3 px-1.5 sm:px-3 z-10">
+          <h3 className="text-red-400 font-bold text-xs sm:text-sm flex items-center gap-1 sticky top-0 bg-gray-900/95 py-0.5 sm:py-1 -mx-1 sm:-mx-2 px-1 sm:px-2 z-10">
             ⚔️ Offensive
           </h3>
           <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-1 sm:gap-2 sm:pl-2">
@@ -120,7 +120,7 @@ export function UpgradePanel({ gameState, upgradeCosts, onUpgrade }: UpgradePane
 
         {/* Defensive Upgrades */}
         <div className="space-y-1 sm:space-y-2">
-          <h3 className="text-blue-400 font-bold text-xs sm:text-sm flex items-center gap-1 sticky top-0 bg-gray-900 py-0.5 sm:py-1 -mx-1.5 sm:-mx-3 px-1.5 sm:px-3 z-10">
+          <h3 className="text-blue-400 font-bold text-xs sm:text-sm flex items-center gap-1 sticky top-0 bg-gray-900/95 py-0.5 sm:py-1 -mx-1 sm:-mx-2 px-1 sm:px-2 z-10">
             🛡️ Defensive
           </h3>
           <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-1 sm:gap-2 sm:pl-2">
@@ -147,7 +147,7 @@ export function UpgradePanel({ gameState, upgradeCosts, onUpgrade }: UpgradePane
 
         {/* Economic Upgrades */}
         <div className="space-y-1 sm:space-y-2">
-          <h3 className="text-yellow-400 font-bold text-xs sm:text-sm flex items-center gap-1 sticky top-0 bg-gray-900 py-0.5 sm:py-1 -mx-1.5 sm:-mx-3 px-1.5 sm:px-3 z-10">
+          <h3 className="text-yellow-400 font-bold text-xs sm:text-sm flex items-center gap-1 sticky top-0 bg-gray-900/95 py-0.5 sm:py-1 -mx-1 sm:-mx-2 px-1 sm:px-2 z-10">
             💰 Economic
           </h3>
           <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-1 sm:gap-2 sm:pl-2">
