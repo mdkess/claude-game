@@ -27,9 +27,8 @@ export class VisualEffects {
   createExplosion(x: number, y: number, color: number = 0xff6600, scale: number = 1) {
     // Main flash
     const flash = new PIXI.Graphics();
-    flash.beginFill(0xffffff);
-    flash.drawCircle(0, 0, 30 * scale);
-    flash.endFill();
+    flash.circle(0, 0, 30 * scale);
+    flash.fill({ color: 0xffffff });
     flash.position.set(x, y);
     flash.alpha = 0.8;
     this.container.addChild(flash);
@@ -80,8 +79,9 @@ export class VisualEffects {
    */
   createShockwave(x: number, y: number, color: number = 0x00ff88, scale: number = 1) {
     const shockwave = new PIXI.Graphics();
-    shockwave.lineStyle(3, color, 0.8);
-    shockwave.drawCircle(0, 0, 10);
+    shockwave.setStrokeStyle({ width: 3, color, alpha: 0.8 });
+    shockwave.circle(0, 0, 10);
+    shockwave.stroke();
     shockwave.position.set(x, y);
     shockwave.scale.set(scale);
     this.container.addChild(shockwave);
@@ -109,8 +109,9 @@ export class VisualEffects {
     const rippleCount = 3;
     for (let i = 0; i < rippleCount; i++) {
       const ripple = new PIXI.Graphics();
-      ripple.lineStyle(2, color, 0.6);
-      ripple.drawCircle(0, 0, 5);
+      ripple.setStrokeStyle({ width: 2, color, alpha: 0.6 });
+      ripple.circle(0, 0, 5);
+      ripple.stroke();
       ripple.position.set(x, y);
       this.container.addChild(ripple);
       
@@ -135,14 +136,13 @@ export class VisualEffects {
   createMuzzleFlash(x: number, y: number, angle: number, color: number = 0x00ffaa) {
     // Main flash
     const flash = new PIXI.Graphics();
-    flash.beginFill(color);
-    flash.drawPolygon([
+    flash.poly([
       0, 0,
       40, -10,
       50, 0,
       40, 10
     ]);
-    flash.endFill();
+    flash.fill({ color });
     flash.position.set(x, y);
     flash.rotation = angle;
     flash.alpha = 0.9;
@@ -186,9 +186,8 @@ export class VisualEffects {
     scale: number = 1
   ) {
     const particle = new PIXI.Graphics();
-    particle.beginFill(color);
-    particle.drawCircle(0, 0, 3);
-    particle.endFill();
+    particle.circle(0, 0, 3);
+    particle.fill({ color });
     particle.position.set(x, y);
     particle.scale.set(scale);
     this.container.addChild(particle);
@@ -216,9 +215,8 @@ export class VisualEffects {
     color: number
   ) {
     const spark = new PIXI.Graphics();
-    spark.beginFill(color);
-    spark.drawRect(-8, -1, 16, 2);
-    spark.endFill();
+    spark.rect(-8, -1, 16, 2);
+    spark.fill({ color });
     spark.position.set(x, y);
     spark.rotation = Math.atan2(vy, vx);
     this.container.addChild(spark);
@@ -242,9 +240,8 @@ export class VisualEffects {
    */
   private createSmokeParticle(x: number, y: number) {
     const smoke = new PIXI.Graphics();
-    smoke.beginFill(0x666666);
-    smoke.drawCircle(0, 0, 10);
-    smoke.endFill();
+    smoke.circle(0, 0, 10);
+    smoke.fill({ color: 0x666666 });
     smoke.position.set(x, y);
     smoke.alpha = 0.3;
     this.container.addChild(smoke);
@@ -268,9 +265,8 @@ export class VisualEffects {
    */
   createProjectileTrail(x: number, y: number, color: number = 0x00ff88) {
     const trail = new PIXI.Graphics();
-    trail.beginFill(color);
-    trail.drawCircle(0, 0, 4);
-    trail.endFill();
+    trail.circle(0, 0, 4);
+    trail.fill({ color });
     trail.position.set(x, y);
     trail.alpha = 0.6;
     this.container.addChild(trail);
@@ -318,9 +314,8 @@ export class VisualEffects {
     // Rising particles
     for (let i = 0; i < 10; i++) {
       const particle = new PIXI.Graphics();
-      particle.beginFill(color);
-      particle.drawCircle(0, 0, 2);
-      particle.endFill();
+      particle.circle(0, 0, 2);
+      particle.fill({ color });
       
       const angle = (Math.PI * 2 * i) / 10;
       const radius = 40;
@@ -345,9 +340,8 @@ export class VisualEffects {
     
     // Central burst
     const burst = new PIXI.Graphics();
-    burst.beginFill(color);
-    burst.drawStar(0, 0, 8, 20, 10);
-    burst.endFill();
+    burst.star(0, 0, 8, 20, 10);
+    burst.fill({ color });
     burst.position.set(x, y);
     burst.alpha = 0.8;
     this.container.addChild(burst);

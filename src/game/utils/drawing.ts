@@ -28,7 +28,7 @@ export function drawCircle(
   y: number,
   radius: number
 ): void {
-  graphics.drawCircle(x, y, radius);
+  graphics.circle(x, y, radius);
 }
 
 export function drawRectangle(
@@ -40,8 +40,8 @@ export function drawRectangle(
   centered: boolean = false
 ): void {
   if (centered) {
-    graphics.drawRect(x - width / 2, y - height / 2, width, height);
+    graphics.rect(x - width / 2, y - height / 2, width, height);
   } else {
-    graphics.drawRect(x, y, width, height);
+    graphics.rect(x, y, width, height);
   }
 }

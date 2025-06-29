@@ -1,5 +1,11 @@
 import { normalizeVector } from '../utils/math';
 import { gameEvents, GameEvents } from '../core/EventEmitter';
+import { 
+  PROJECTILE_ID_MULTIPLIER, 
+  PROJECTILE_ID_RANGE, 
+  PROJECTILE_BOUNDS_MARGIN
+} from '../core/gameplayConstants';
+import { GAME_SIZE } from '../core/constants';
 
 export interface ProjectileTarget {
   x: number;
@@ -42,7 +48,7 @@ export class Projectile {
   
   init(config: ProjectileConfig): void {
     // Generate new ID for each projectile initialization
-    this.id = Date.now() * 1000 + Math.floor(Math.random() * 1000);
+    this.id = Date.now() * PROJECTILE_ID_MULTIPLIER + Math.floor(Math.random() * PROJECTILE_ID_RANGE);
     
     this.x = config.x;
     this.y = config.y;
@@ -104,10 +110,8 @@ export class Projectile {
     }
     
     // Also destroy if projectile goes way off screen (safety check)
-    const GAME_SIZE = 800; // From constants
-    const MARGIN = 100;
-    if (this.x < -MARGIN || this.x > GAME_SIZE + MARGIN || 
-        this.y < -MARGIN || this.y > GAME_SIZE + MARGIN) {
+    if (this.x < -PROJECTILE_BOUNDS_MARGIN || this.x > GAME_SIZE + PROJECTILE_BOUNDS_MARGIN || 
+        this.y < -PROJECTILE_BOUNDS_MARGIN || this.y > GAME_SIZE + PROJECTILE_BOUNDS_MARGIN) {
       this.destroy();
     }
   }

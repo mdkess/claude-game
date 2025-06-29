@@ -4,6 +4,7 @@ import { COLORS, ENEMY_HEALTH_BAR } from '../core/constants';
 import { drawPolygon } from '../utils/drawing';
 import { enemyDefinitions } from '../enemies/definitions/EnemyDefinitions';
 import { BaseRenderer } from './BaseRenderer';
+import { createLayeredShape, ShapeType } from '../utils/shapeRenderer';
 
 interface AnimatedSprite extends PIXI.Container {
   outerGlow?: PIXI.Graphics;
@@ -113,82 +114,30 @@ export class EnemyRenderer extends BaseRenderer<Enemy, AnimatedSprite> {
       shape: 'circle' as const
     };
     
-    // Create layers for effects
-    const glowContainer = new PIXI.Container();
-    const mainContainer = new PIXI.Container();
-    
-    // Outer glow (pulsing)
-    const outerGlow = new PIXI.Graphics();
-    if (visual.shape === 'circle') {
-      outerGlow.circle(0, 0, visual.size * 2);
-    } else if (visual.shape === 'square') {
-      outerGlow.rect(-visual.size * 2, -visual.size * 2, visual.size * 4, visual.size * 4);
-    } else if (visual.shape === 'triangle') {
-      drawPolygon(outerGlow, 0, 0, visual.size * 2, 3);
-    } else if (visual.shape === 'hexagon') {
-      drawPolygon(outerGlow, 0, 0, visual.size * 2, 6);
-    }
-    outerGlow.fill({ color: visual.color, alpha: 0.4 });
-    glowContainer.addChild(outerGlow);
-    
-    // Inner glow
-    const innerGlow = new PIXI.Graphics();
-    if (visual.shape === 'circle') {
-      innerGlow.circle(0, 0, visual.size * 1.5);
-    } else if (visual.shape === 'square') {
-      innerGlow.rect(-visual.size * 1.5, -visual.size * 1.5, visual.size * 3, visual.size * 3);
-    } else if (visual.shape === 'triangle') {
-      drawPolygon(innerGlow, 0, 0, visual.size * 1.5, 3);
-    } else if (visual.shape === 'hexagon') {
-      drawPolygon(innerGlow, 0, 0, visual.size * 1.5, 6);
-    }
-    innerGlow.fill({ color: visual.color, alpha: 0.5 });
-    glowContainer.addChild(innerGlow);
-    
-    // Main shape with gradient effect
-    const mainGraphics = new PIXI.Graphics();
-    
-    // Draw main shape with stroke
-    mainGraphics.setStrokeStyle({ width: 2, color: visual.color });
-    if (visual.shape === 'circle') {
-      mainGraphics.circle(0, 0, visual.size);
-    } else if (visual.shape === 'square') {
-      mainGraphics.rect(-visual.size, -visual.size, visual.size * 2, visual.size * 2);
-    } else if (visual.shape === 'triangle') {
-      drawPolygon(mainGraphics, 0, 0, visual.size, 3);
-    } else if (visual.shape === 'hexagon') {
-      drawPolygon(mainGraphics, 0, 0, visual.size, 6);
-    }
-    mainGraphics.stroke();
-    mainGraphics.fill({ color: visual.color, alpha: 1 });
-    
-    // Inner core (lighter)
-    const coreGraphics = new PIXI.Graphics();
-    const coreSize = visual.size * 0.6;
-    if (visual.shape === 'circle') {
-      coreGraphics.circle(0, 0, coreSize);
-    } else if (visual.shape === 'square') {
-      coreGraphics.rect(-coreSize, -coreSize, coreSize * 2, coreSize * 2);
-    } else if (visual.shape === 'triangle') {
-      drawPolygon(coreGraphics, 0, 0, coreSize, 3);
-    } else if (visual.shape === 'hexagon') {
-      drawPolygon(coreGraphics, 0, 0, coreSize, 6);
-    }
-    // Make core brighter by mixing with white
-    const brightColor = this.blendColors(visual.color, 0xffffff, 0.5);
-    coreGraphics.fill({ color: brightColor, alpha: 0.8 });
-    
-    mainContainer.addChild(mainGraphics);
-    mainContainer.addChild(coreGraphics);
+    // Create layered shape using the helper
+    const layeredShape = createLayeredShape(
+      visual.shape as ShapeType,
+      visual.size,
+      visual.color,
+      {
+        glowScale: 2,
+        innerGlowScale: 1.5,
+        coreScale: 0.6,
+        strokeWidth: 2,
+        glowAlpha: 0.4,
+        innerGlowAlpha: 0.5,
+        coreAlpha: 0.8,
+        coreColorBlend: 0.5
+      }
+    );
     
     // Store references for animation
-    sprite.outerGlow = outerGlow;
-    sprite.glowContainer = glowContainer;
-    sprite.mainContainer = mainContainer;
+    sprite.outerGlow = layeredShape.outerGlow;
+    sprite.glowContainer = layeredShape.container.children[0] as PIXI.Container;
+    sprite.mainContainer = layeredShape.container.children[1] as PIXI.Container;
     sprite.pulseTime = Math.random() * Math.PI * 2; // Random start phase
     
-    sprite.addChild(glowContainer);
-    sprite.addChild(mainContainer);
+    sprite.addChild(layeredShape.container);
     
     // Create health bar
     const healthBarContainer = this.createHealthBar();
@@ -199,22 +148,6 @@ export class EnemyRenderer extends BaseRenderer<Enemy, AnimatedSprite> {
     sprite.healthBar = healthBarContainer.children[1] as PIXI.Graphics;
     
     return sprite;
-  }
-  
-  private blendColors(color1: number, color2: number, factor: number): number {
-    const r1 = (color1 >> 16) & 0xff;
-    const g1 = (color1 >> 8) & 0xff;
-    const b1 = color1 & 0xff;
-    
-    const r2 = (color2 >> 16) & 0xff;
-    const g2 = (color2 >> 8) & 0xff;
-    const b2 = color2 & 0xff;
-    
-    const r = Math.round(r1 * (1 - factor) + r2 * factor);
-    const g = Math.round(g1 * (1 - factor) + g2 * factor);
-    const b = Math.round(b1 * (1 - factor) + b2 * factor);
-    
-    return (r << 16) | (g << 8) | b;
   }
   
   private createHealthBar(): PIXI.Container {

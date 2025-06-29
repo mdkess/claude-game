@@ -2,6 +2,8 @@ import { Tower } from '../entities/Tower';
 import { Enemy } from '../entities/Enemy';
 import { Projectile } from '../entities/Projectile';
 import { gameEvents, GameEvents } from '../core/EventEmitter';
+import { isEnemy } from '../utils/typeGuards';
+import { PROJECTILE_POOL_SIZE, MULTI_SHOT_SPREAD_ANGLE } from '../core/gameplayConstants';
 
 /**
  * Manages combat between tower and enemies
@@ -15,7 +17,7 @@ export class CombatSystem {
     this.tower = tower;
     
     // Pre-populate projectile pool with more projectiles for multi-shot
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < PROJECTILE_POOL_SIZE; i++) {
       this.projectilePool.push(new Projectile());
     }
   }
@@ -30,8 +32,8 @@ export class CombatSystem {
     if (this.fireTimer >= fireInterval) {
       const target = this.tower.findNearestTarget(enemies);
       
-      if (target) {
-        this.fireAtTarget(target as Enemy, projectiles);
+      if (target && isEnemy(target)) {
+        this.fireAtTarget(target, projectiles);
         this.fireTimer = 0;
       }
     }
@@ -59,7 +61,7 @@ export class CombatSystem {
     // Fire all projectiles with slight spread
     for (let i = 0; i < totalProjectiles; i++) {
       // Add slight angle spread for multiple projectiles
-      const spreadAngle = extraProjectiles > 0 ? (i - extraProjectiles / 2) * 0.15 : 0;
+      const spreadAngle = extraProjectiles > 0 ? (i - extraProjectiles / 2) * MULTI_SHOT_SPREAD_ANGLE : 0;
       const projectileAngle = angle + spreadAngle;
       
       // Calculate target position with spread

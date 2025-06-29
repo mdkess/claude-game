@@ -232,9 +232,10 @@ export class WaveSystem {
       this.waveState.enemiesKilled++;
       
       // Decrease remaining count for this enemy type
-      const currentCount = this.waveState.enemiesRemaining.get(enemy.type as EnemyType) || 0;
+      const enemyType = enemy.type as EnemyType;
+      const currentCount = this.waveState.enemiesRemaining.get(enemyType) || 0;
       if (currentCount > 0) {
-        this.waveState.enemiesRemaining.set(enemy.type as EnemyType, currentCount - 1);
+        this.waveState.enemiesRemaining.set(enemyType, currentCount - 1);
         this.waveState.totalEnemiesRemaining--;
       }
     }

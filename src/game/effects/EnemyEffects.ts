@@ -25,7 +25,7 @@ export class EnemyEffects {
       }
     });
     
-    const text = new PIXI.Text(damage.toString(), style);
+    const text = new PIXI.Text({ text: damage.toString(), style });
     text.anchor.set(0.5, 0.5);
     text.position.set(x + (Math.random() - 0.5) * 20, y);
     this.container.addChild(text);

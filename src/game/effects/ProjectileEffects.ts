@@ -17,23 +17,20 @@ export class ProjectileEffects {
     
     // Outer glow
     const outerGlow = new PIXI.Graphics();
-    outerGlow.beginFill(color, 0.2);
-    outerGlow.drawCircle(0, 0, 20);
-    outerGlow.endFill();
+    outerGlow.circle(0, 0, 20);
+    outerGlow.fill({ color, alpha: 0.2 });
     projectileContainer.addChild(outerGlow);
     
     // Middle glow
     const middleGlow = new PIXI.Graphics();
-    middleGlow.beginFill(color, 0.4);
-    middleGlow.drawCircle(0, 0, 12);
-    middleGlow.endFill();
+    middleGlow.circle(0, 0, 12);
+    middleGlow.fill({ color, alpha: 0.4 });
     projectileContainer.addChild(middleGlow);
     
     // Core
     const core = new PIXI.Graphics();
-    core.beginFill(0xffffff, 0.9);
-    core.drawCircle(0, 0, 4);
-    core.endFill();
+    core.circle(0, 0, 4);
+    core.fill({ color: 0xffffff, alpha: 0.9 });
     projectileContainer.addChild(core);
     
     // Add the original projectile
@@ -73,9 +70,8 @@ export class ProjectileEffects {
     }
     
     const trail = new PIXI.Graphics();
-    trail.beginFill(color, 0.6);
-    trail.drawCircle(0, 0, 6);
-    trail.endFill();
+    trail.circle(0, 0, 6);
+    trail.fill({ color, alpha: 0.6 });
     trail.position.set(x, y);
     
     this.container.addChild(trail);
@@ -108,9 +104,8 @@ export class ProjectileEffects {
   createMultiShotEffect(x: number, y: number, angles: number[], color: number = 0x00ffaa) {
     // Central burst
     const burst = new PIXI.Graphics();
-    burst.beginFill(color, 0.5);
-    burst.drawCircle(0, 0, 15);
-    burst.endFill();
+    burst.circle(0, 0, 15);
+    burst.fill({ color, alpha: 0.5 });
     burst.position.set(x, y);
     this.container.addChild(burst);
     
@@ -129,9 +124,10 @@ export class ProjectileEffects {
     // Direction indicators
     angles.forEach((angle, i) => {
       const line = new PIXI.Graphics();
-      line.lineStyle(2, color, 0.8);
+      line.setStrokeStyle({ width: 2, color, alpha: 0.8 });
       line.moveTo(0, 0);
       line.lineTo(30, 0);
+      line.stroke();
       line.position.set(x, y);
       line.rotation = angle;
       this.container.addChild(line);
@@ -156,9 +152,8 @@ export class ProjectileEffects {
   createBounceEffect(x: number, y: number, fromAngle: number, toAngle: number, color: number = 0x00ffaa) {
     // Impact flash
     const flash = new PIXI.Graphics();
-    flash.beginFill(0xffffff, 0.8);
-    flash.drawCircle(0, 0, 10);
-    flash.endFill();
+    flash.circle(0, 0, 10);
+    flash.fill({ color: 0xffffff, alpha: 0.8 });
     flash.position.set(x, y);
     this.container.addChild(flash);
     
@@ -176,8 +171,9 @@ export class ProjectileEffects {
     
     // Direction change arc
     const arc = new PIXI.Graphics();
-    arc.lineStyle(2, color, 0.6);
+    arc.setStrokeStyle({ width: 2, color, alpha: 0.6 });
     arc.arc(0, 0, 20, fromAngle, toAngle);
+    arc.stroke();
     arc.position.set(x, y);
     this.container.addChild(arc);
     
@@ -196,9 +192,8 @@ export class ProjectileEffects {
     // Spark particles at bounce point
     for (let i = 0; i < 5; i++) {
       const spark = new PIXI.Graphics();
-      spark.beginFill(color);
-      spark.drawCircle(0, 0, 2);
-      spark.endFill();
+      spark.circle(0, 0, 2);
+      spark.fill({ color });
       spark.position.set(x, y);
       this.container.addChild(spark);
       
@@ -229,7 +224,7 @@ export class ProjectileEffects {
     const arcCount = Math.floor(3 + power * 2);
     for (let i = 0; i < arcCount; i++) {
       const arc = new PIXI.Graphics();
-      arc.lineStyle(1, color, 0.8);
+      arc.setStrokeStyle({ width: 1, color, alpha: 0.8 });
       
       // Draw jagged line
       const points: number[] = [0, 0];
@@ -240,7 +235,8 @@ export class ProjectileEffects {
         points.push(x, y);
       }
       
-      arc.drawPolygon(points);
+      arc.poly(points);
+      arc.stroke();
       arc.rotation = (Math.PI * 2 * i) / arcCount;
       projectile.addChild(arc);
       
@@ -258,8 +254,9 @@ export class ProjectileEffects {
     
     // Energy field
     const field = new PIXI.Graphics();
-    field.lineStyle(2, color, 0.3);
-    field.drawCircle(0, 0, 15 + power * 5);
+    field.setStrokeStyle({ width: 2, color, alpha: 0.3 });
+    field.circle(0, 0, 15 + power * 5);
+    field.stroke();
     projectile.addChild(field);
     
     gsap.to(field, {
