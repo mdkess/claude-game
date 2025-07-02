@@ -69,6 +69,8 @@ export function GameCanvas() {
           maxHealth: gameRef.current.getUpgradeCost("maxHealth"),
           healthRegen: gameRef.current.getUpgradeCost("healthRegen"),
           range: gameRef.current.getUpgradeCost("range"),
+          goldPerRound: gameRef.current.getUpgradeCost("goldPerRound"),
+          interest: gameRef.current.getUpgradeCost("interest"),
         });
       }
     }, 100);
@@ -331,22 +333,24 @@ export function GameCanvas() {
         style={{ touchAction: "none" }}
       />
       {gameState && (
-        <GameUI
-          gameState={gameState}
-          upgradeCosts={upgradeCosts}
-          onUpgrade={handleUpgrade}
-          isGameOver={isGameOver}
-          finalScore={finalScore}
-          earnedEssence={earnedEssence}
-          totalEssence={totalEssence}
-          permanentUpgrades={permanentUpgrades}
-          onRestart={handleRestart}
-          onPurchasePermanentUpgrade={handlePurchasePermanentUpgrade}
-          onDebugDamage={debugMode ? handleDebugDamage : undefined}
-          onDebugGold={debugMode ? handleDebugGold : undefined}
-          onDebugEssence={debugMode ? handleDebugEssence : undefined}
-          onToggleSpeed={handleToggleSpeed}
-        />
+        <div className="absolute inset-0 pointer-events-none z-10">
+          <GameUI
+            gameState={gameState}
+            upgradeCosts={upgradeCosts}
+            onUpgrade={handleUpgrade}
+            isGameOver={isGameOver}
+            finalScore={finalScore}
+            earnedEssence={earnedEssence}
+            totalEssence={totalEssence}
+            permanentUpgrades={permanentUpgrades}
+            onRestart={handleRestart}
+            onPurchasePermanentUpgrade={handlePurchasePermanentUpgrade}
+            onDebugDamage={debugMode ? handleDebugDamage : undefined}
+            onDebugGold={debugMode ? handleDebugGold : undefined}
+            onDebugEssence={debugMode ? handleDebugEssence : undefined}
+            onToggleSpeed={handleToggleSpeed}
+          />
+        </div>
       )}
     </div>
   );
